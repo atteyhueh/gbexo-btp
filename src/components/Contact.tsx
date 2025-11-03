@@ -24,15 +24,24 @@ export default function Contact() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      const { api } = await import('../lib/api');
+      await api.contact.send(formData);
+
       setSubmitStatus('success');
       setFormData({ name: '', email: '', phone: '', message: '' });
 
       setTimeout(() => {
         setSubmitStatus('idle');
       }, 3000);
-    }, 1500);
+    } catch (error) {
+      setSubmitStatus('error');
+      setTimeout(() => {
+        setSubmitStatus('idle');
+      }, 3000);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const contactInfo = [

@@ -120,7 +120,7 @@ export default function Hero() {
             className="bg-gradient-to-r from-yellow-construction to-yellow-dark text-black-solid px-8 py-4 rounded-full font-bold text-lg shadow-3d hover:shadow-3d-hover transition-all"
             whileHover={{ scale: 1.05, y: -3 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth' })}
+            onClick={() => window.location.href = '/quote'}
           >
             Demander un Devis
           </motion.button>

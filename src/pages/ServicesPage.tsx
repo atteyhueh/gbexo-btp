@@ -86,11 +86,12 @@ export default function ServicesPage() {
                     </div>
 
                     <motion.button
+                      onClick={() => window.location.href = '/quote'}
                       className="mt-8 w-full bg-gradient-to-r from-yellow-construction to-yellow-dark text-black-solid px-6 py-3 rounded-full font-semibold transition-all"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                     >
-                      En savoir plus
+                      Demander un devis
                     </motion.button>
                   </div>
                 </motion.div>

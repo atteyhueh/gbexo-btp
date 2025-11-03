@@ -1,17 +1,15 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabase';
+import { api } from '../../lib/api';
 import { Mail, Phone, Trash2 } from 'lucide-react';
 
 type QuoteRequest = {
-  id: string;
+  id: number;
   name: string;
   email: string;
-  phone: string;
-  service_type: string;
-  project_description: string;
-  budget_range: string;
-  timeline: string;
+  company: string;
+  project_type: string;
+  description: string;
   created_at: string;
 };
 
@@ -25,28 +23,20 @@ export default function QuotesManager() {
 
   const fetchQuotes = async () => {
     try {
-      const { data, error } = await supabase
-        .from('quotes_requests')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
+      const data = await api.quotes.list();
       setQuotes(data || []);
+    } catch (error) {
+      console.error(error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: number) => {
     if (!confirm('Êtes-vous sûr?')) return;
 
     try {
-      const { error } = await supabase
-        .from('quotes_requests')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
+      await api.quotes.delete(id.toString());
       fetchQuotes();
     } catch (error) {
       alert('Erreur');
@@ -76,21 +66,19 @@ export default function QuotesManager() {
                     <Mail className="w-4 h-4" />
                     <a href={`mailto:${quote.email}`} className="hover:text-sky-primary">{quote.email}</a>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Phone className="w-4 h-4" />
-                    <a href={`tel:${quote.phone}`} className="hover:text-sky-primary">{quote.phone}</a>
-                  </div>
+                  {quote.company && (
+                    <div className="flex items-center gap-2">
+                      <Phone className="w-4 h-4" />
+                      <span>{quote.company}</span>
+                    </div>
+                  )}
                 </div>
                 <div className="mb-2">
                   <span className="px-3 py-1 bg-sky-primary/10 text-sky-primary rounded-full text-sm font-semibold">
-                    {quote.service_type || 'Non spécifié'}
+                    {quote.project_type || 'Non spécifié'}
                   </span>
                 </div>
-                <p className="text-gray-700 dark:text-gray-300 mb-2">{quote.project_description}</p>
-                <div className="flex gap-4 text-sm text-gray-500 dark:text-gray-400">
-                  {quote.budget_range && <span>Budget: {quote.budget_range}</span>}
-                  {quote.timeline && <span>Délai: {quote.timeline}</span>}
-                </div>
+                <p className="text-gray-700 dark:text-gray-300 mb-2">{quote.description}</p>
                 <p className="text-xs text-gray-400 mt-2">
                   Reçu le: {new Date(quote.created_at).toLocaleDateString('fr-FR')}
                 </p>

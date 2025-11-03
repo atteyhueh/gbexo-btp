@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import { supabase } from '../../lib/supabase';
+import { api } from '../../lib/api';
 import { Briefcase, FileText, Users, MessageSquare, Mail, UserCircle } from 'lucide-react';
 
 export default function Overview() {
@@ -18,23 +18,27 @@ export default function Overview() {
   }, []);
 
   const fetchStats = async () => {
-    const [projects, services, team, testimonials, quotes, jobs] = await Promise.all([
-      supabase.from('projects').select('id', { count: 'exact', head: true }),
-      supabase.from('services').select('id', { count: 'exact', head: true }),
-      supabase.from('team_members').select('id', { count: 'exact', head: true }),
-      supabase.from('testimonials').select('id', { count: 'exact', head: true }),
-      supabase.from('quotes_requests').select('id', { count: 'exact', head: true }),
-      supabase.from('job_openings').select('id', { count: 'exact', head: true }),
-    ]);
+    try {
+      const [projects, services, team, testimonials, quotes, jobs] = await Promise.all([
+        api.projects.list(),
+        api.services.list(),
+        api.team.list(),
+        api.testimonials.list(),
+        api.quotes.list(),
+        api.jobs.list(),
+      ]);
 
-    setStats({
-      projects: projects.count || 0,
-      services: services.count || 0,
-      team: team.count || 0,
-      testimonials: testimonials.count || 0,
-      quotes: quotes.count || 0,
-      jobs: jobs.count || 0,
-    });
+      setStats({
+        projects: projects?.length || 0,
+        services: services?.length || 0,
+        team: team?.length || 0,
+        testimonials: testimonials?.length || 0,
+        quotes: quotes?.length || 0,
+        jobs: jobs?.length || 0,
+      });
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    }
   };
 
   const cards = [

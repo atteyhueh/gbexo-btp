@@ -12,6 +12,7 @@ import ProjectsPage from './pages/ProjectsPage';
 import ProjectDetail from './pages/ProjectDetail';
 import AboutPage from './pages/AboutPage';
 import CareersPage from './pages/CareersPage';
+import QuotePage from './pages/QuotePage';
 import Login from './pages/admin/Login';
 import Dashboard from './pages/admin/Dashboard';
 
@@ -74,6 +75,7 @@ function App() {
                         <Route path="/project/:id" element={<ProjectDetail />} />
                         <Route path="/about" element={<AboutPage />} />
                         <Route path="/careers" element={<CareersPage />} />
+                        <Route path="/quote" element={<QuotePage />} />
                       </Routes>
                     </main>
                     <Footer />

@@ -5,6 +5,10 @@ import authRoutes from './routes/auth.js';
 import projectsRoutes from './routes/projects.js';
 import servicesRoutes from './routes/services.js';
 import jobsRoutes from './routes/jobs.js';
+import teamRoutes from './routes/team.js';
+import testimonialsRoutes from './routes/testimonials.js';
+import quotesRoutes from './routes/quotes.js';
+import contactRoutes from './routes/contact.js';
 
 dotenv.config();
 
@@ -18,6 +22,10 @@ app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectsRoutes);
 app.use('/api/services', servicesRoutes);
 app.use('/api/jobs', jobsRoutes);
+app.use('/api/team', teamRoutes);
+app.use('/api/testimonials', testimonialsRoutes);
+app.use('/api/quotes', quotesRoutes);
+app.use('/api/contact', contactRoutes);
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });

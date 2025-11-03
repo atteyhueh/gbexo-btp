@@ -1,7 +1,16 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
-import { supabase, type TeamMember } from '../../lib/supabase';
+import { api } from '../../lib/api';
 import { Trash2 } from 'lucide-react';
+
+type TeamMember = {
+  id: number;
+  name: string;
+  role: string;
+  bio: string;
+  image_url: string;
+  order_index: number;
+};
 
 export default function TeamManager() {
   const [members, setMembers] = useState<TeamMember[]>([]);
@@ -13,45 +22,23 @@ export default function TeamManager() {
 
   const fetchMembers = async () => {
     try {
-      const { data, error } = await supabase
-        .from('team_members')
-        .select('*')
-        .order('order_index', { ascending: true });
-
-      if (error) throw error;
+      const data = await api.team.list();
       setMembers(data || []);
+    } catch (error) {
+      console.error(error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: number) => {
     if (!confirm('Êtes-vous sûr?')) return;
 
     try {
-      const { error } = await supabase
-        .from('team_members')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
+      await api.team.delete(id.toString());
       fetchMembers();
     } catch (error) {
       alert('Erreur lors de la suppression');
-    }
-  };
-
-  const toggleActive = async (id: string, isActive: boolean) => {
-    try {
-      const { error } = await supabase
-        .from('team_members')
-        .update({ is_active: !isActive })
-        .eq('id', id);
-
-      if (error) throw error;
-      fetchMembers();
-    } catch (error) {
-      alert('Erreur');
     }
   };
 
@@ -75,15 +62,7 @@ export default function TeamManager() {
               <h3 className="text-lg font-bold text-gray-900 dark:text-white">{member.name}</h3>
               <p className="text-sky-primary font-semibold text-sm mb-2">{member.role}</p>
               <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">{member.bio}</p>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => toggleActive(member.id, member.is_active)}
-                  className={`flex-1 px-3 py-1 rounded-lg font-semibold text-sm ${
-                    member.is_active ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-700'
-                  }`}
-                >
-                  {member.is_active ? 'Actif' : 'Inactif'}
-                </button>
+              <div className="flex justify-end">
                 <button
                   onClick={() => handleDelete(member.id)}
                   className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600"

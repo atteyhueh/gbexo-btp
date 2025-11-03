@@ -1,7 +1,19 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
-import { supabase, type Testimonial } from '../../lib/supabase';
+import { api } from '../../lib/api';
 import { Star, Trash2 } from 'lucide-react';
+
+type Testimonial = {
+  id: number;
+  client_name: string;
+  client_role: string;
+  client_company: string;
+  message: string;
+  rating: number;
+  avatar_url: string;
+  is_featured: boolean;
+  order_index: number;
+};
 
 export default function TestimonialsManager() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
@@ -13,42 +25,35 @@ export default function TestimonialsManager() {
 
   const fetchTestimonials = async () => {
     try {
-      const { data, error } = await supabase
-        .from('testimonials')
-        .select('*')
-        .order('order_index', { ascending: true });
-
-      if (error) throw error;
+      const data = await api.testimonials.list();
       setTestimonials(data || []);
+    } catch (error) {
+      console.error(error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: number) => {
     if (!confirm('Êtes-vous sûr?')) return;
 
     try {
-      const { error } = await supabase
-        .from('testimonials')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
+      await api.testimonials.delete(id.toString());
       fetchTestimonials();
     } catch (error) {
       alert('Erreur');
     }
   };
 
-  const toggleFeatured = async (id: string, isFeatured: boolean) => {
+  const toggleFeatured = async (id: number, isFeatured: boolean) => {
     try {
-      const { error } = await supabase
-        .from('testimonials')
-        .update({ is_featured: !isFeatured })
-        .eq('id', id);
+      const testimonial = testimonials.find(t => t.id === id);
+      if (!testimonial) return;
 
-      if (error) throw error;
+      await api.testimonials.update(id.toString(), {
+        ...testimonial,
+        is_featured: !isFeatured
+      });
       fetchTestimonials();
     } catch (error) {
       alert('Erreur');
@@ -72,7 +77,7 @@ export default function TestimonialsManager() {
           >
             <div className="flex items-start gap-4">
               <img
-                src={testimonial.client_image}
+                src={testimonial.avatar_url}
                 alt={testimonial.client_name}
                 className="w-16 h-16 rounded-full object-cover"
               />

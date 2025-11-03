@@ -105,4 +105,61 @@ export const api = {
         method: 'DELETE',
       }),
   },
+
+  team: {
+    list: () => apiCall('/team'),
+    create: (data: any) =>
+      apiCall('/team', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    update: (id: string, data: any) =>
+      apiCall(`/team/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      }),
+    delete: (id: string) =>
+      apiCall(`/team/${id}`, {
+        method: 'DELETE',
+      }),
+  },
+
+  testimonials: {
+    list: () => apiCall('/testimonials'),
+    create: (data: any) =>
+      apiCall('/testimonials', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    update: (id: string, data: any) =>
+      apiCall(`/testimonials/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      }),
+    delete: (id: string) =>
+      apiCall(`/testimonials/${id}`, {
+        method: 'DELETE',
+      }),
+  },
+
+  quotes: {
+    list: () => apiCall('/quotes'),
+    create: (data: any) =>
+      apiCall('/quotes', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    delete: (id: string) =>
+      apiCall(`/quotes/${id}`, {
+        method: 'DELETE',
+      }),
+  },
+
+  contact: {
+    send: (data: any) =>
+      apiCall('/contact', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+  },
 };

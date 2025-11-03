@@ -102,7 +102,7 @@ export default function Navigation({ darkMode, toggleDarkMode }: NavigationProps
                 )}
               </motion.button>
 
-              <Link to="/projects">
+              <Link to="/quote">
                 <motion.button
                   className="bg-gradient-to-r from-yellow-construction to-yellow-dark text-black-solid px-6 py-2 rounded-full font-semibold shadow-3d hover:shadow-3d-hover transition-all"
                   whileHover={{ scale: 1.05, y: -2 }}
@@ -156,7 +156,7 @@ export default function Navigation({ darkMode, toggleDarkMode }: NavigationProps
                   </motion.div>
                 </Link>
               ))}
-              <Link to="/projects" onClick={() => setIsOpen(false)}>
+              <Link to="/quote" onClick={() => setIsOpen(false)}>
                 <motion.button
                   className="w-full bg-gradient-to-r from-yellow-construction to-yellow-dark text-black-solid px-6 py-3 rounded-full font-semibold shadow-3d"
                   whileTap={{ scale: 0.95 }}

@@ -118,7 +118,10 @@ export default function Services() {
                     animate={{ opacity: hoveredIndex === index ? 1 : 0 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <button className="text-sky-primary font-semibold text-sm hover:text-sky-dark transition-colors flex items-center">
+                    <button
+                      onClick={() => window.location.href = '/services'}
+                      className="text-sky-primary font-semibold text-sm hover:text-sky-dark transition-colors flex items-center"
+                    >
                       En savoir plus
                       <motion.span
                         animate={{ x: hoveredIndex === index ? 5 : 0 }}
