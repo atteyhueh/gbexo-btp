@@ -63,8 +63,8 @@ export default function Contact() {
     {
       icon: Phone,
       title: 'Téléphone',
-      value: '+228 90 12 34 56',
-      link: 'tel:+22890123456'
+      value: '+229 90 12 34 56',
+      link: 'tel:+22990123456'
     },
     {
       icon: Mail,
@@ -75,7 +75,7 @@ export default function Contact() {
     {
       icon: MapPin,
       title: 'Adresse',
-      value: 'Boulevard du 13 Janvier, Lomé, Togo',
+      value: 'Boulevard de la Marina, Cotonou, Bénin',
       link: 'https://maps.google.com'
     }
   ];
@@ -341,8 +341,8 @@ export default function Contact() {
                 </div>
               </div>
               <div className="mt-6 pt-6 border-t border-white/30">
-                <h4 className="font-semibold mb-2">Localisation: Cotonou, Bénin</h4>
-                <p className="text-sm text-white/80">Zone industrielle de Cotonou</p>
+                <h4 className="font-semibold mb-2">Siège social: Cotonou, Bénin</h4>
+                <p className="text-sm text-white/80">Boulevard de la Marina, Zone portuaire</p>
               </div>
             </div>
           </motion.div>

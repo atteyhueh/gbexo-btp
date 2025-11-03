@@ -1,18 +1,36 @@
 import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useProjects } from '../hooks/useProjects';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, Search } from 'lucide-react';
 
 const categories = ['Tous', 'Bâtiment', 'Routes', 'Rénovation', 'Infrastructure'];
+const statuses = ['Tous', 'completed', 'ongoing', 'planned'];
+const statusLabels: { [key: string]: string } = {
+  'Tous': 'Tous les statuts',
+  'completed': 'Terminé',
+  'ongoing': 'En cours',
+  'planned': 'Planifié'
+};
 
 export default function ProjectsPage() {
   const { projects, isLoading } = useProjects();
   const [selectedCategory, setSelectedCategory] = useState('Tous');
+  const [selectedStatus, setSelectedStatus] = useState('Tous');
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredProjects = selectedCategory === 'Tous'
-    ? projects
-    : projects.filter(p => p.category === selectedCategory);
+  const filteredProjects = useMemo(() => {
+    return projects.filter(project => {
+      const matchesCategory = selectedCategory === 'Tous' || project.category === selectedCategory;
+      const matchesStatus = selectedStatus === 'Tous' || project.status === selectedStatus;
+      const matchesSearch = searchQuery === '' ||
+        project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        project.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        project.description.toLowerCase().includes(searchQuery.toLowerCase());
+
+      return matchesCategory && matchesStatus && matchesSearch;
+    });
+  }, [projects, selectedCategory, selectedStatus, searchQuery]);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black-solid pt-24">
@@ -32,26 +50,78 @@ export default function ProjectsPage() {
         </motion.div>
 
         <motion.div
-          className="flex flex-wrap justify-center gap-4 mb-12"
+          className="bg-white dark:bg-gray-construction rounded-2xl p-6 shadow-3d mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.8 }}
         >
-          {categories.map((category) => (
-            <motion.button
-              key={category}
-              onClick={() => setSelectedCategory(category)}
-              className={`px-6 py-3 rounded-full font-semibold transition-all ${
-                selectedCategory === category
-                  ? 'bg-gradient-to-r from-yellow-construction to-yellow-dark text-black-solid shadow-3d'
-                  : 'bg-white dark:bg-gray-construction text-gray-700 dark:text-gray-300 hover:bg-gray-100'
-              }`}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              {category}
-            </motion.button>
-          ))}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Rechercher un projet
+            </label>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Nom du projet, lieu, description..."
+                className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-black-solid text-gray-900 dark:text-white focus:border-sky-primary focus:outline-none transition-colors"
+              />
+            </div>
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Catégorie
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {categories.map((category) => (
+                <motion.button
+                  key={category}
+                  onClick={() => setSelectedCategory(category)}
+                  className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${
+                    selectedCategory === category
+                      ? 'bg-gradient-to-r from-yellow-construction to-yellow-dark text-black-solid shadow-3d'
+                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200'
+                  }`}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  {category}
+                </motion.button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Statut
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {statuses.map((status) => (
+                <motion.button
+                  key={status}
+                  onClick={() => setSelectedStatus(status)}
+                  className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${
+                    selectedStatus === status
+                      ? 'bg-sky-primary text-white'
+                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200'
+                  }`}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  {statusLabels[status]}
+                </motion.button>
+              ))}
+            </div>
+          </div>
+
+          {(searchQuery || selectedCategory !== 'Tous' || selectedStatus !== 'Tous') && (
+            <div className="mt-4 text-sm text-gray-600 dark:text-gray-300">
+              {filteredProjects.length} projet{filteredProjects.length > 1 ? 's' : ''} trouvé{filteredProjects.length > 1 ? 's' : ''}
+            </div>
+          )}
         </motion.div>
 
         {isLoading ? (

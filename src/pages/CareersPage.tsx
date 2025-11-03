@@ -10,18 +10,58 @@ export default function CareersPage() {
   const [selectedJob, setSelectedJob] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [uploading, setUploading] = useState(false);
   const { register, handleSubmit, reset, formState: { errors } } = useForm<JobApplication>();
+
+  const handleFileUpload = async (file: File): Promise<string | null> => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('cvs')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('cvs')
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      return null;
+    }
+  };
 
   const handleApply = async (data: JobApplication) => {
     if (!selectedJob) return;
 
     try {
       setIsSubmitting(true);
+      let cvUrl = data.cv_url;
+
+      if (data.cv_url && typeof data.cv_url !== 'string') {
+        const fileList = data.cv_url as unknown as FileList;
+        if (fileList.length > 0) {
+          setUploading(true);
+          cvUrl = await handleFileUpload(fileList[0]) || '';
+          setUploading(false);
+        }
+      }
+
       const { error } = await supabase
         .from('job_applications')
         .insert([
           {
-            ...data,
+            first_name: data.first_name,
+            last_name: data.last_name,
+            email: data.email,
+            phone: data.phone,
+            cover_letter: data.cover_letter,
+            cv_url: cvUrl,
             job_opening_id: selectedJob
           }
         ]);
@@ -39,6 +79,7 @@ export default function CareersPage() {
       setTimeout(() => setSubmitStatus('idle'), 3000);
     } finally {
       setIsSubmitting(false);
+      setUploading(false);
     }
   };
 
@@ -208,6 +249,21 @@ export default function CareersPage() {
                     className="w-full px-4 py-2 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:border-sky-primary focus:outline-none"
                     placeholder="+229 XX XX XX XX"
                   />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    CV (PDF, max 5MB) *
+                  </label>
+                  <input
+                    type="file"
+                    accept=".pdf,.doc,.docx"
+                    {...register('cv_url', { required: true })}
+                    className="w-full px-4 py-2 border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:border-sky-primary focus:outline-none"
+                  />
+                  {uploading && (
+                    <p className="text-sm text-sky-primary mt-1">Upload en cours...</p>
+                  )}
                 </div>
 
                 <div>

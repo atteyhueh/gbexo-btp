@@ -1,6 +1,15 @@
 import { motion } from 'framer-motion';
 import { useTeam } from '../hooks/useTeam';
-import { Award, Users, Target, Shield } from 'lucide-react';
+import { Award, Users, Target, Shield, Quote } from 'lucide-react';
+
+const timeline = [
+  { year: '2014', title: 'Fondation', description: 'Création de GBEXO BTP à Cotonou par Cyriaque KINZO' },
+  { year: '2016', title: 'Premier grand projet', description: 'Réalisation du Centre Commercial ModernPlaza' },
+  { year: '2018', title: 'Expansion régionale', description: 'Extension des activités dans toute la région maritime' },
+  { year: '2020', title: 'Certification ISO', description: 'Obtention de la certification ISO 9001:2015' },
+  { year: '2022', title: '100+ projets', description: 'Dépassement du cap des 100 projets réalisés' },
+  { year: '2024', title: 'Leader au Bénin', description: 'Reconnaissance comme leader du BTP au Bénin' },
+];
 
 const values = [
   {
@@ -83,6 +92,122 @@ export default function AboutPage() {
             </motion.div>
           </motion.div>
         </div>
+
+        <div className="mb-20">
+          <motion.div
+            className="text-center mb-12"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+              Mot du Directeur Général
+            </h2>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <motion.div
+              className="relative"
+              initial={{ opacity: 0, x: -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+            >
+              <div className="rounded-2xl overflow-hidden shadow-3d">
+                <img
+                  src="https://images.pexels.com/photos/2182970/pexels-photo-2182970.jpeg?auto=compress&cs=tinysrgb&w=800"
+                  alt="Cyriaque KINZO"
+                  className="w-full h-96 object-cover"
+                />
+              </div>
+              <div className="absolute -bottom-6 -right-6 bg-yellow-construction rounded-2xl p-6 shadow-3d">
+                <h3 className="text-xl font-bold text-black-solid">Cyriaque KINZO</h3>
+                <p className="text-black-solid/80 font-semibold">Directeur Général</p>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+              className="relative"
+            >
+              <Quote className="w-16 h-16 text-yellow-construction/30 mb-4" />
+              <div className="text-gray-700 dark:text-gray-300 space-y-4 leading-relaxed">
+                <p>
+                  Depuis la création de GBEXO BTP en 2014, notre vision a toujours été claire : devenir le partenaire privilégié des entreprises et institutions au Bénin pour leurs projets de construction et travaux publics.
+                </p>
+                <p>
+                  Fort de plus de 20 ans d'expérience dans le secteur du BTP, j'ai fondé GBEXO BTP avec la conviction que l'excellence, l'innovation et le respect des engagements sont les piliers d'une entreprise durable.
+                </p>
+                <p>
+                  Aujourd'hui, avec plus de 200 projets réalisés et une équipe de 50+ professionnels qualifiés, nous continuons à repousser les limites de l'excellence pour construire l'avenir du Bénin.
+                </p>
+                <p className="italic font-semibold text-sky-primary">
+                  "Notre engagement : Transformer vos ambitions en réalité, un projet à la fois."
+                </p>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+
+        <motion.div
+          className="mb-20"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.8 }}
+        >
+          <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-12">
+            Notre Parcours
+          </h2>
+
+          <div className="relative">
+            <div className="absolute left-1/2 transform -translate-x-1/2 h-full w-1 bg-gradient-to-b from-sky-primary via-yellow-construction to-sky-dark" />
+
+            <div className="space-y-12">
+              {timeline.map((event, index) => (
+                <motion.div
+                  key={index}
+                  className={`flex items-center gap-8 ${
+                    index % 2 === 0 ? 'flex-row' : 'flex-row-reverse'
+                  }`}
+                  initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1, duration: 0.6 }}
+                >
+                  <div className={`flex-1 ${index % 2 === 0 ? 'text-right' : 'text-left'}`}>
+                    <motion.div
+                      className="bg-white dark:bg-gray-construction rounded-2xl p-6 shadow-3d inline-block"
+                      whileHover={{ scale: 1.05, y: -5 }}
+                    >
+                      <div className="text-yellow-construction text-2xl font-bold mb-2">{event.year}</div>
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{event.title}</h3>
+                      <p className="text-gray-600 dark:text-gray-300">{event.description}</p>
+                    </motion.div>
+                  </div>
+
+                  <motion.div
+                    className="relative z-10 w-6 h-6 bg-yellow-construction rounded-full border-4 border-white dark:border-black-solid shadow-3d"
+                    whileHover={{ scale: 1.5 }}
+                    animate={{
+                      boxShadow: [
+                        '0 0 0 0 rgba(252, 211, 77, 0.7)',
+                        '0 0 0 15px rgba(252, 211, 77, 0)',
+                      ],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: 'easeInOut',
+                    }}
+                  />
+
+                  <div className="flex-1" />
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
 
         <motion.div
           className="bg-gradient-to-r from-sky-primary to-sky-dark rounded-2xl p-8 md:p-12 text-white shadow-3d mb-20"
