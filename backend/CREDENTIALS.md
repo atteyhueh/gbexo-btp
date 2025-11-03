@@ -3,6 +3,7 @@
 ## Admin Créé par Défaut
 
 ```
+npm run init-admin
 Email: admin@gbexobtp.com
 Password: Admin1234!
 ```
@@ -11,6 +12,7 @@ Password: Admin1234!
 
 ### Frontend (.env)
 ```
+Get-Content database.sql | & "C:\xampp\mysql\bin\mysql.exe" -u root
 VITE_API_URL=http://localhost:5000/api
 ```
 

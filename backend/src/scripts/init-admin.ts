@@ -6,7 +6,9 @@ const initAdmin = async () => {
     const email = 'admin@gbexobtp.com';
     const password = 'Admin1234!';
 
+    console.log('Hashing password...');
     const hashedPassword = await bcrypt.hash(password, 10);
+    console.log('Hash generated:', hashedPassword);
 
     const connection = await pool.getConnection();
 
@@ -16,9 +18,8 @@ const initAdmin = async () => {
     );
 
     if (existing.length > 0) {
-      console.log('Admin already exists');
-      connection.release();
-      return;
+      console.log('Admin already exists, deleting...');
+      await connection.execute('DELETE FROM admins WHERE email = ?', [email]);
     }
 
     await connection.execute(
@@ -29,6 +30,7 @@ const initAdmin = async () => {
     console.log('Admin created successfully');
     console.log('Email:', email);
     console.log('Password:', password);
+    console.log('You can now login with these credentials');
 
     connection.release();
     process.exit(0);

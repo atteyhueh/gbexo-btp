@@ -1,23 +1,19 @@
 import { motion } from 'framer-motion';
 import { Mail, Phone, MapPin, Send } from 'lucide-react';
 import { useState } from 'react';
-import { supabase, type QuoteRequest } from '../lib/supabase';
 
 export default function Contact() {
-  const [formData, setFormData] = useState<QuoteRequest>({
+  const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
-    service_type: '',
-    project_description: '',
-    budget_range: '',
-    timeline: ''
+    message: ''
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
@@ -28,43 +24,23 @@ export default function Contact() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    try {
-      const { error } = await supabase
-        .from('quotes_requests')
-        .insert([formData]);
-
-      if (error) throw error;
-
+    setTimeout(() => {
       setIsSubmitting(false);
       setSubmitStatus('success');
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        service_type: '',
-        project_description: '',
-        budget_range: '',
-        timeline: ''
-      });
+      setFormData({ name: '', email: '', phone: '', message: '' });
 
       setTimeout(() => {
         setSubmitStatus('idle');
       }, 3000);
-    } catch (err) {
-      setIsSubmitting(false);
-      setSubmitStatus('error');
-      setTimeout(() => {
-        setSubmitStatus('idle');
-      }, 3000);
-    }
+    }, 1500);
   };
 
   const contactInfo = [
     {
       icon: Phone,
       title: 'Téléphone',
-      value: '+229 90 12 34 56',
-      link: 'tel:+22990123456'
+      value: '+228 90 12 34 56',
+      link: 'tel:+22890123456'
     },
     {
       icon: Mail,
@@ -75,7 +51,7 @@ export default function Contact() {
     {
       icon: MapPin,
       title: 'Adresse',
-      value: 'Boulevard de la Marina, Cotonou, Bénin',
+      value: 'Boulevard du 13 Janvier, Lomé, Togo',
       link: 'https://maps.google.com'
     }
   ];
@@ -181,79 +157,31 @@ export default function Contact() {
 
                 <div>
                   <label className="block text-gray-700 dark:text-gray-300 font-medium mb-2">
-                    Téléphone *
+                    Téléphone
                   </label>
                   <input
                     type="tel"
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
-                    required
                     className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-black-solid text-gray-900 dark:text-white focus:border-sky-primary focus:outline-none transition-colors"
-                    placeholder="+229 XX XX XX XX"
+                    placeholder="+228 XX XX XX XX"
                   />
                 </div>
 
                 <div>
                   <label className="block text-gray-700 dark:text-gray-300 font-medium mb-2">
-                    Type de service
-                  </label>
-                  <select
-                    name="service_type"
-                    value={formData.service_type}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-black-solid text-gray-900 dark:text-white focus:border-sky-primary focus:outline-none transition-colors"
-                  >
-                    <option value="">Sélectionnez un service</option>
-                    <option value="Construction">Construction & Génie Civil</option>
-                    <option value="Routes">Travaux Publics & Routes</option>
-                    <option value="Rénovation">Rénovation & Maintenance</option>
-                    <option value="Études">Études Techniques & Conception</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-gray-700 dark:text-gray-300 font-medium mb-2">
-                    Description du projet *
+                    Message *
                   </label>
                   <textarea
-                    name="project_description"
-                    value={formData.project_description}
+                    name="message"
+                    value={formData.message}
                     onChange={handleChange}
                     required
                     rows={5}
                     className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-black-solid text-gray-900 dark:text-white focus:border-sky-primary focus:outline-none transition-colors resize-none"
-                    placeholder="Décrivez votre projet en détail..."
+                    placeholder="Décrivez votre projet..."
                   />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-gray-700 dark:text-gray-300 font-medium mb-2">
-                      Budget approximatif
-                    </label>
-                    <input
-                      type="text"
-                      name="budget_range"
-                      value={formData.budget_range}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-black-solid text-gray-900 dark:text-white focus:border-sky-primary focus:outline-none transition-colors"
-                      placeholder="Ex: 10-50 millions"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-gray-700 dark:text-gray-300 font-medium mb-2">
-                      Délai souhaité
-                    </label>
-                    <input
-                      type="text"
-                      name="timeline"
-                      value={formData.timeline}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-black-solid text-gray-900 dark:text-white focus:border-sky-primary focus:outline-none transition-colors"
-                      placeholder="Ex: 6-12 mois"
-                    />
-                  </div>
                 </div>
 
                 <motion.button
@@ -291,16 +219,6 @@ export default function Contact() {
                     Message envoyé avec succès! Nous vous contacterons bientôt.
                   </motion.div>
                 )}
-
-                {submitStatus === 'error' && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 px-4 py-3 rounded-lg text-center"
-                  >
-                    Erreur lors de l'envoi. Veuillez réessayer.
-                  </motion.div>
-                )}
               </form>
             </div>
           </motion.div>
@@ -314,7 +232,7 @@ export default function Contact() {
           >
             <div className="bg-white dark:bg-gray-construction rounded-2xl overflow-hidden shadow-3d h-96">
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3972.5551319597627!2d2.4306!3d6.4969!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1024316d00000001%3A0x1024316d00000001!2sCotonou%2C%20B%C3%A9nin!5e0!3m2!1sfr!2s!4v1700000000000"
+  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3976.570982849165!2d2.4043156!3d6.3702936!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1022b3ef0c0a6f5f%3A0x8e77c2d1a8f9e1a0!2sCotonou%2C%20B%C3%A9nin!5e0!3m2!1sfr!2s!4v1698790123456!5m2!1sfr!2s" 
                 width="100%"
                 height="100%"
                 style={{ border: 0 }}
@@ -339,10 +257,6 @@ export default function Contact() {
                   <span>Dimanche</span>
                   <span className="font-semibold text-yellow-construction">Fermé</span>
                 </div>
-              </div>
-              <div className="mt-6 pt-6 border-t border-white/30">
-                <h4 className="font-semibold mb-2">Siège social: Cotonou, Bénin</h4>
-                <p className="text-sm text-white/80">Boulevard de la Marina, Zone portuaire</p>
               </div>
             </div>
           </motion.div>
