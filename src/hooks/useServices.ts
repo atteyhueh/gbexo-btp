@@ -1,5 +1,14 @@
 import { useState, useEffect } from 'react';
-import { supabase, type Service } from '../lib/supabase';
+import { api } from '../lib/api';
+
+export interface Service {
+  id: number;
+  title: string;
+  description: string;
+  icon: string;
+  order_index: number;
+  is_active: boolean;
+}
 
 export function useServices() {
   const [services, setServices] = useState<Service[]>([]);
@@ -13,13 +22,7 @@ export function useServices() {
   const fetchServices = async () => {
     try {
       setIsLoading(true);
-      const { data, error } = await supabase
-        .from('services')
-        .select('*')
-        .eq('is_active', true)
-        .order('order_index', { ascending: true });
-
-      if (error) throw error;
+      const data = await api.services.list();
       setServices(data || []);
       setError(null);
     } catch (err) {

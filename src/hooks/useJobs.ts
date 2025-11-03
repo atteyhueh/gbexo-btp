@@ -1,5 +1,14 @@
 import { useState, useEffect } from 'react';
-import { supabase, type JobOpening } from '../lib/supabase';
+import { api } from '../lib/api';
+
+export interface JobOpening {
+  id: number;
+  title: string;
+  description: string;
+  requirements: string[];
+  is_open: boolean;
+  created_at: string;
+}
 
 export function useJobs() {
   const [jobs, setJobs] = useState<JobOpening[]>([]);
@@ -13,13 +22,7 @@ export function useJobs() {
   const fetchJobs = async () => {
     try {
       setIsLoading(true);
-      const { data, error } = await supabase
-        .from('job_openings')
-        .select('*')
-        .eq('is_open', true)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
+      const data = await api.jobs.list();
       setJobs(data || []);
       setError(null);
     } catch (err) {

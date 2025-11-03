@@ -1,5 +1,22 @@
 import { useState, useEffect } from 'react';
-import { supabase, type Project, type ProjectImage } from '../lib/supabase';
+import { api } from '../lib/api';
+
+export interface ProjectImage {
+  id: number;
+  project_id: number;
+  image_url: string;
+  order_index: number;
+}
+
+export interface Project {
+  id: number;
+  title: string;
+  description: string;
+  thumbnail_url: string;
+  order_index: number;
+  technologies: string[];
+  images?: ProjectImage[];
+}
 
 export function useProjects() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -13,12 +30,7 @@ export function useProjects() {
   const fetchProjects = async () => {
     try {
       setIsLoading(true);
-      const { data, error } = await supabase
-        .from('projects')
-        .select('*')
-        .order('order_index', { ascending: true });
-
-      if (error) throw error;
+      const data = await api.projects.list();
       setProjects(data || []);
       setError(null);
     } catch (err) {
@@ -46,28 +58,9 @@ export function useProjectById(id: string) {
   const fetchProjectDetails = async () => {
     try {
       setIsLoading(true);
-
-      const { data: projectData, error: projectError } = await supabase
-        .from('projects')
-        .select('*')
-        .eq('id', id)
-        .maybeSingle();
-
-      if (projectError) throw projectError;
-
-      if (projectData) {
-        setProject(projectData);
-
-        const { data: imagesData, error: imagesError } = await supabase
-          .from('project_images')
-          .select('*')
-          .eq('project_id', id)
-          .order('order_index', { ascending: true });
-
-        if (imagesError) throw imagesError;
-        setImages(imagesData || []);
-      }
-
+      const data = await api.projects.get(id);
+      setProject(data);
+      setImages(data.images || []);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur lors du chargement');
