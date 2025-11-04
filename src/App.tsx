@@ -17,6 +17,7 @@ import QuotePage from './pages/QuotePage';
 import Login from './pages/admin/Login';
 import Dashboard from './pages/admin/Dashboard';
 
+
 function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [darkMode, setDarkMode] = useState(false);

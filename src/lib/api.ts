@@ -155,6 +155,28 @@ export const api = {
       }),
   },
 
+  // Nouvelles routes pour les annonces
+  announcements: {
+    list: () => apiCall('/announcements'),
+    urgent: () => apiCall('/announcements/urgent'),
+    get: (id: string) => apiCall(`/announcements/${id}`),
+    create: (data: any) =>
+      apiCall('/announcements', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    update: (id: string, data: any) =>
+      apiCall(`/announcements/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      }),
+    delete: (id: string) =>
+      apiCall(`/announcements/${id}`, {
+        method: 'DELETE',
+      }),
+    count: () => apiCall('/announcements/count'),
+  },
+
   contact: {
     send: (data: any) =>
       apiCall('/contact', {

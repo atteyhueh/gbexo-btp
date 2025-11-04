@@ -2,14 +2,17 @@ import mysql from 'mysql2/promise';
 
 // Configuration de la connexion MySQL
 const pool = mysql.createPool({
-  host: import.meta.env.VITE_MYSQL_HOST || 'localhost',
-  user: import.meta.env.VITE_MYSQL_USER,
-  password: import.meta.env.VITE_MYSQL_PASSWORD,
-  database: import.meta.env.VITE_MYSQL_DATABASE,
+  host: process.env.MYSQL_HOST || 'localhost',
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
 });
+
+
+
 
 // Types existants
 export type Service = {

@@ -123,6 +123,28 @@ CREATE TABLE quotes (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+-- Ajout de la table announcements au schéma existant
+
+CREATE TABLE announcements (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  content LONGTEXT NOT NULL,
+  cover_image_url VARCHAR(500),
+  is_urgent BOOLEAN DEFAULT FALSE,
+  is_active BOOLEAN DEFAULT TRUE,
+  link_url VARCHAR(500),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_is_urgent (is_urgent),
+  INDEX idx_is_active (is_active),
+  INDEX idx_created_at (created_at)
+);
+
+-- Données de test pour les annonces
+INSERT INTO announcements (title, content, cover_image_url, is_urgent, link_url) VALUES
+('Recrutement Massif en Cours', 'GBEXO BTP recrute 50+ nouveaux talents pour ses projets d''envergure. Postulez dès maintenant !', 'https://images.pexels.com/photos/3183197/pexels-photo-3183197.jpeg?auto=compress&cs=tinysrgb&w=800', true, '/careers'),
+('Nouveau Projet à Parakou', 'Lancement officiel du projet autoroutier Nord-Sud. Découvrez les détails de ce projet ambitieux.', 'https://images.pexels.com/photos/2219024/pexels-photo-2219024.jpeg?auto=compress&cs=tinysrgb&w=800', true, '/projects'),
+('Promotion Spéciale Devis', 'Obtenez une réduction de 10% sur votre devis pour tout projet soumis avant fin décembre.', 'https://images.pexels.com/photos/3182773/pexels-photo-3182773.jpeg?auto=compress&cs=tinysrgb&w=800', false, '/quote');
 
 -- Insert default admin (password: admin123 - hashed with bcrypt)
 INSERT INTO admins (email, password) VALUES 

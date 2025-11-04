@@ -1,10 +1,77 @@
-import { motion, useScroll, useTransform } from 'framer-motion';
-import { ChevronDown, HardHat, Building2, Truck } from 'lucide-react';
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import { ChevronDown, HardHat, Building2, Truck, Bell, X } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { api } from '../lib/api';
+
+type Announcement = {
+  id: number;
+  title: string;
+  content: string;
+  cover_image_url: string;
+  link_url?: string;
+  created_at: string;
+};
 
 export default function Hero() {
   const { scrollY } = useScroll();
   const y = useTransform(scrollY, [0, 500], [0, 150]);
   const opacity = useTransform(scrollY, [0, 300], [1, 0]);
+
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [isOpen, setIsOpen] = useState(false);
+  const [count, setCount] = useState(0);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    fetchAnnouncements();
+    const interval = setInterval(fetchAnnouncements, 300000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
+
+  const fetchAnnouncements = async () => {
+    try {
+      const data = await api.announcements.list();
+      setAnnouncements(data || []);
+      setCount(data?.length || 0);
+    } catch (error) {
+      console.error('Error fetching announcements:', error);
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
+  const handleViewMore = (announcement: Announcement) => {
+    if (announcement.link_url) {
+      if (announcement.link_url.startsWith('http')) {
+        window.open(announcement.link_url, '_blank');
+      } else {
+        window.location.href = announcement.link_url;
+      }
+    }
+    setIsOpen(false);
+  };
 
   const handleScrollToServices = () => {
     document.querySelector('#services')?.scrollIntoView({ behavior: 'smooth' });
@@ -12,6 +79,98 @@ export default function Hero() {
 
   return (
     <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-sky-dark via-sky-primary to-sky-light dark:from-black-solid dark:via-gray-construction dark:to-sky-dark">
+      {/* Bouton de notification en haut à droite */}
+      <div className="absolute top-20 right-6 z-20" ref={dropdownRef}>
+        <motion.button
+          onClick={() => setIsOpen(!isOpen)}
+          className="relative p-3 bg-white/10 backdrop-blur-md hover:bg-white/20 rounded-full transition-all duration-200 border border-white/30"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          aria-label="Notifications"
+        >
+          <Bell className={`w-7 h-7 ${isOpen ? 'text-yellow-construction' : 'text-white'} transition-colors`} />
+          
+          {count > 0 && (
+            <motion.span
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-lg"
+            >
+              {count > 9 ? '9+' : count}
+            </motion.span>
+          )}
+        </motion.button>
+
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -10, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -10, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+              className="absolute right-0 mt-2 w-96 max-h-[600px] bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden"
+            >
+              <div className="sticky top-0 bg-gradient-to-r from-yellow-construction to-yellow-dark text-black px-4 py-3 flex items-center justify-between">
+                <h3 className="font-bold text-lg">Annonces ({count})</h3>
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="hover:bg-black/10 rounded-full p-1 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="overflow-y-auto max-h-[520px] custom-scrollbar">
+                {announcements.length === 0 ? (
+                  <div className="p-8 text-center text-gray-500 dark:text-gray-400">
+                    <Bell className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                    <p>Aucune annonce pour le moment</p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                    {announcements.map((announcement) => (
+                      <motion.div
+                        key={announcement.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                      >
+                        <div className="flex gap-3">
+                          <img
+                            src={announcement.cover_image_url}
+                            alt={announcement.title}
+                            className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-semibold text-gray-900 dark:text-white text-sm mb-1 line-clamp-1">
+                              {announcement.title}
+                            </h4>
+                            <p className="text-xs text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">
+                              {announcement.content}
+                            </p>
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs text-gray-500 dark:text-gray-500">
+                                {formatDate(announcement.created_at)}
+                              </span>
+                              <button
+                                onClick={() => handleViewMore(announcement)}
+                                className="text-xs font-semibold text-yellow-600 hover:text-yellow-700 dark:hover:text-yellow-500 hover:underline transition-all duration-200"
+                              >
+                                Voir plus →
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
           className="absolute top-20 left-10 opacity-10"
@@ -172,6 +331,22 @@ export default function Hero() {
       >
         <ChevronDown className="w-8 h-8 text-white/70" />
       </motion.div>
+
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(156, 163, 175, 0.5);
+          border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(107, 114, 128, 0.7);
+        }
+      `}</style>
     </section>
   );
 }

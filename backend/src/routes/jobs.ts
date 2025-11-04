@@ -4,11 +4,27 @@ import { AuthRequest, authMiddleware } from '../middleware/auth.js';
 
 const router = Router();
 
-router.get('/', async (req: AuthRequest, res: Response) => {
+// Route publique : retourne uniquement les jobs ouverts
+router.get('/public', async (req: AuthRequest, res: Response) => {
   try {
     const connection = await pool.getConnection();
     const [jobs]: any = await connection.execute(
       'SELECT * FROM job_openings WHERE is_open = true ORDER BY created_at DESC'
+    );
+    connection.release();
+    res.json(jobs);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch jobs' });
+  }
+});
+
+// Route admin : retourne TOUS les jobs (ouverts et fermés)
+router.get('/', async (req: AuthRequest, res: Response) => {
+  try {
+    const connection = await pool.getConnection();
+    const [jobs]: any = await connection.execute(
+      'SELECT * FROM job_openings ORDER BY created_at DESC'
     );
     connection.release();
     res.json(jobs);
@@ -43,12 +59,43 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
 
 router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const { title, description, requirements, is_open } = req.body;
+    const { 
+      title, 
+      department, 
+      contract_type, 
+      description, 
+      location, 
+      salary_range, 
+      is_open, 
+      requirements, 
+      responsibilities 
+    } = req.body;
+    
     const connection = await pool.getConnection();
 
     const [result]: any = await connection.execute(
-      'INSERT INTO job_openings (title, description, requirements, is_open) VALUES (?, ?, ?, ?)',
-      [title, description, JSON.stringify(requirements || []), is_open || true]
+      `INSERT INTO job_openings (
+        title, 
+        department, 
+        contract_type, 
+        description, 
+        location, 
+        salary_range, 
+        is_open, 
+        requirements, 
+        responsibilities
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        title, 
+        department, 
+        contract_type, 
+        description, 
+        location, 
+        salary_range || null, 
+        is_open !== undefined ? is_open : true, 
+        JSON.stringify(requirements || []), 
+        JSON.stringify(responsibilities || [])
+      ]
     );
 
     connection.release();
@@ -62,12 +109,44 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
 router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const { title, description, requirements, is_open } = req.body;
+    const { 
+      title, 
+      department, 
+      contract_type, 
+      description, 
+      location, 
+      salary_range, 
+      is_open, 
+      requirements, 
+      responsibilities 
+    } = req.body;
+    
     const connection = await pool.getConnection();
 
     await connection.execute(
-      'UPDATE job_openings SET title = ?, description = ?, requirements = ?, is_open = ? WHERE id = ?',
-      [title, description, JSON.stringify(requirements || []), is_open, id]
+      `UPDATE job_openings SET 
+        title = ?, 
+        department = ?, 
+        contract_type = ?, 
+        description = ?, 
+        location = ?, 
+        salary_range = ?, 
+        is_open = ?, 
+        requirements = ?, 
+        responsibilities = ? 
+      WHERE id = ?`,
+      [
+        title, 
+        department, 
+        contract_type, 
+        description, 
+        location, 
+        salary_range || null, 
+        is_open, 
+        JSON.stringify(requirements || []), 
+        JSON.stringify(responsibilities || []), 
+        id
+      ]
     );
 
     connection.release();

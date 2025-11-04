@@ -23,7 +23,30 @@ export function useJobs() {
     try {
       setIsLoading(true);
       const data = await api.jobs.list();
-      setJobs(data || []);
+      
+      // Parse requirements if they come as JSON strings from the database
+      const parsedJobs = (data || []).map(job => ({
+        ...job,
+        requirements: (() => {
+          try {
+            // If requirements is already an array, use it
+            if (Array.isArray(job.requirements)) {
+              return job.requirements;
+            }
+            // If requirements is a string, parse it
+            if (typeof job.requirements === 'string') {
+              return JSON.parse(job.requirements);
+            }
+            // Fallback to empty array
+            return [];
+          } catch (err) {
+            console.error('Error parsing requirements for job:', job.id, err);
+            return [];
+          }
+        })()
+      }));
+      
+      setJobs(parsedJobs);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur lors du chargement');

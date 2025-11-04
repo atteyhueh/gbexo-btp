@@ -39,6 +39,23 @@ export default function ServicesPage() {
           <div className="grid md:grid-cols-2 gap-8">
             {services.map((service, index) => {
               const Icon = iconMap[service.icon_name] || Building2;
+              
+              // Parse features if they're stored as JSON string
+              const features = (() => {
+                try {
+                  if (Array.isArray(service.features)) {
+                    return service.features;
+                  }
+                  if (typeof service.features === 'string') {
+                    return JSON.parse(service.features);
+                  }
+                  return [];
+                } catch (error) {
+                  console.error('Error parsing features for service:', service.id, error);
+                  return [];
+                }
+              })();
+
               return (
                 <motion.div
                   key={service.id}
@@ -71,7 +88,7 @@ export default function ServicesPage() {
                     </p>
 
                     <div className="space-y-3">
-                      {service.features.map((feature, idx) => (
+                      {features.map((feature, idx) => (
                         <motion.div
                           key={idx}
                           className="flex items-start"
