@@ -20,12 +20,12 @@ router.get('/', async (req: AuthRequest, res: Response) => {
 
 router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const { title, description, icon, order_index, is_active } = req.body;
+    const { title, description, icon, image_url, order_index, is_active } = req.body;
     const connection = await pool.getConnection();
 
     const [result]: any = await connection.execute(
-      'INSERT INTO services (title, description, icon, order_index, is_active) VALUES (?, ?, ?, ?, ?)',
-      [title, description, icon, order_index, is_active || true]
+      'INSERT INTO services (title, description, icon_name, image_url, order_index, is_active) VALUES (?, ?, ?, ?, ?, ?)',
+      [title, description, icon, image_url || null, order_index || 0, is_active !== false]
     );
 
     connection.release();
@@ -39,12 +39,12 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
 router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const { title, description, icon, order_index, is_active } = req.body;
+    const { title, description, icon, image_url, order_index, is_active } = req.body;
     const connection = await pool.getConnection();
 
     await connection.execute(
-      'UPDATE services SET title = ?, description = ?, icon = ?, order_index = ?, is_active = ? WHERE id = ?',
-      [title, description, icon, order_index, is_active, id]
+      'UPDATE services SET title = ?, description = ?, icon_name = ?, image_url = ?, order_index = ?, is_active = ? WHERE id = ?',
+      [title, description, icon, image_url || null, order_index, is_active, id]
     );
 
     connection.release();

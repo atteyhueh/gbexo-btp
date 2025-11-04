@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { api } from '../../lib/api';
 import { Plus, Edit, Trash2, X, Eye } from 'lucide-react';
+import { ImageUpload } from './ImageUpload';
 
 type Project = {
   id?: string;
@@ -21,6 +22,7 @@ type Project = {
   featured?: boolean;
   order_index?: number;
   created_at?: string;
+  image_url?: string;
 };
 
 export default function ProjectsManager() {
@@ -44,6 +46,7 @@ export default function ProjectsManager() {
     team_size: 0,
     featured: false,
     order_index: 0,
+    image_url: '',
   });
 
   useEffect(() => {
@@ -127,6 +130,7 @@ export default function ProjectsManager() {
       team_size: 0,
       featured: false,
       order_index: 0,
+      image_url: '',
     });
   };
 
@@ -518,6 +522,14 @@ export default function ProjectsManager() {
                     onChange={handleChange}
                     className="w-full px-4 py-2 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-white rounded-lg focus:border-yellow-500 focus:outline-none"
                     placeholder="Ex: Béton armé, Charpente métallique"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <ImageUpload
+                    value={formData.image_url || ''}
+                    onChange={(url) => setFormData({ ...formData, image_url: url })}
+                    label="Photo du projet"
                   />
                 </div>
 

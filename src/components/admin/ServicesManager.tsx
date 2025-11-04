@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { api } from '../../lib/api';
 import { Trash2, Plus, Edit, X } from 'lucide-react';
+import { ImageUpload } from './ImageUpload';
 
 type Service = {
   id: string;
@@ -10,6 +11,7 @@ type Service = {
   icon: string;
   is_active: boolean;
   order_index: number;
+  image_url?: string;
 };
 
 export default function ServicesManager() {
@@ -23,6 +25,7 @@ export default function ServicesManager() {
     icon: '',
     order_index: 0,
     is_active: true,
+    image_url: '',
   });
 
   useEffect(() => {
@@ -49,6 +52,7 @@ export default function ServicesManager() {
         icon: service.icon,
         order_index: service.order_index,
         is_active: service.is_active,
+        image_url: service.image_url || '',
       });
     } else {
       setEditingService(null);
@@ -58,6 +62,7 @@ export default function ServicesManager() {
         icon: '',
         order_index: services.length,
         is_active: true,
+        image_url: '',
       });
     }
     setShowModal(true);
@@ -247,6 +252,12 @@ export default function ServicesManager() {
                   required
                 />
               </div>
+
+              <ImageUpload
+                value={formData.image_url}
+                onChange={(url) => setFormData({ ...formData, image_url: url })}
+                label="Image du service (optionnel)"
+              />
 
               <div className="flex items-center gap-2">
                 <input

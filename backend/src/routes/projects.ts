@@ -48,12 +48,12 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
 
 router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const { title, description, thumbnail_url, order_index, technologies } = req.body;
+    const { title, description, location, category, project_type, client_name, image_url, status, duration_months, budget, team_size, featured, order_index, technologies } = req.body;
     const connection = await pool.getConnection();
 
     const [result]: any = await connection.execute(
-      'INSERT INTO projects (title, description, thumbnail_url, order_index, technologies) VALUES (?, ?, ?, ?, ?)',
-      [title, description, thumbnail_url, order_index, JSON.stringify(technologies || [])]
+      'INSERT INTO projects (title, description, location, category, project_type, client_name, thumbnail_url, featured, order_index, technologies) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [title, description, location, category, project_type, client_name, image_url, featured || false, order_index || 0, JSON.stringify(technologies || [])]
     );
 
     connection.release();
@@ -67,12 +67,12 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
 router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const { title, description, thumbnail_url, order_index, technologies } = req.body;
+    const { title, description, location, category, project_type, client_name, image_url, status, duration_months, budget, team_size, featured, order_index, technologies } = req.body;
     const connection = await pool.getConnection();
 
     await connection.execute(
-      'UPDATE projects SET title = ?, description = ?, thumbnail_url = ?, order_index = ?, technologies = ? WHERE id = ?',
-      [title, description, thumbnail_url, order_index, JSON.stringify(technologies || []), id]
+      'UPDATE projects SET title = ?, description = ?, location = ?, category = ?, project_type = ?, client_name = ?, thumbnail_url = ?, featured = ?, order_index = ?, technologies = ? WHERE id = ?',
+      [title, description, location, category, project_type, client_name, image_url, featured, order_index, JSON.stringify(technologies || []), id]
     );
 
     connection.release();

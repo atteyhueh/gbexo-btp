@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { api } from '../../lib/api';
 import { Trash2, Plus, Edit, X } from 'lucide-react';
+import { ImageUpload } from './ImageUpload';
 
 type TeamMember = {
   id: number;
@@ -218,19 +219,12 @@ export default function TeamManager() {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">
-                  URL de l'image
-                </label>
-                <input
-                  type="url"
-                  value={formData.image_url}
-                  onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                  className="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                  placeholder="https://example.com/photo.jpg"
-                  required
-                />
-              </div>
+              <ImageUpload
+                value={formData.image_url}
+                onChange={(url) => setFormData({ ...formData, image_url: url })}
+                label="Photo du membre"
+                placeholder="https://example.com/photo.jpg"
+              />
 
               <div>
                 <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">
