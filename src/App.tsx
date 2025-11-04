@@ -6,6 +6,7 @@ import ProtectedRoute from './components/admin/ProtectedRoute';
 import Preloader from './components/Preloader';
 import Navigation from './components/Navigation';
 import Footer from './components/Footer';
+import UrgentAnnouncementBanner from './components/UrgentAnnouncementBanner';
 import Home from './pages/Home';
 import ServicesPage from './pages/ServicesPage';
 import ProjectsPage from './pages/ProjectsPage';
@@ -67,7 +68,7 @@ function App() {
                 element={
                   <div className="min-h-screen bg-white dark:bg-black-solid transition-colors duration-300 flex flex-col">
                     <Navigation darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
-                    <main className="flex-grow">
+                    <main className="flex-grow pb-[50px]">
                       <Routes>
                         <Route path="/" element={<Home />} />
                         <Route path="/services" element={<ServicesPage />} />
@@ -79,6 +80,7 @@ function App() {
                       </Routes>
                     </main>
                     <Footer />
+                    <UrgentAnnouncementBanner />
                   </div>
                 }
               />

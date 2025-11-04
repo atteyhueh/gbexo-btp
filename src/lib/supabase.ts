@@ -103,3 +103,14 @@ export type JobApplication = {
   cv_url?: string;
   cover_letter?: string;
 };
+
+export type UrgentAnnouncement = {
+  id: string;
+  title: string;
+  message: string;
+  is_urgent: boolean;
+  is_active: boolean;
+  link_url?: string;
+  created_at: string;
+  updated_at: string;
+};
