@@ -1,0 +1,69 @@
+═══════════════════════════════════════════════════════
+  CORRECTION DES IMAGES - GBEXO BTP
+═══════════════════════════════════════════════════════
+
+✅ PROBLÈME RÉSOLU !
+
+Vos images ne s'affichaient pas car les "data URLs" (images
+locales) étaient trop volumineuses pour MySQL.
+
+═══════════════════════════════════════════════════════
+  ÉTAPE 1 : MIGRATION (UNE SEULE FOIS)
+═══════════════════════════════════════════════════════
+
+Ouvrir un terminal et taper :
+
+  mysql -u root -p gbexobtp < backend/migrate_image_urls.sql
+
+(Entrer le mot de passe MySQL si demandé)
+
+═══════════════════════════════════════════════════════
+  ÉTAPE 2 : REDÉMARRER
+═══════════════════════════════════════════════════════
+
+Terminal 1 (Backend) :
+  cd backend
+  npm run dev
+
+Terminal 2 (Frontend) :
+  npm run dev
+
+═══════════════════════════════════════════════════════
+  COMMENT AJOUTER DES IMAGES MAINTENANT
+═══════════════════════════════════════════════════════
+
+1. Aller sur l'admin
+2. Créer/Modifier un élément
+3. Cliquer sur "Fichier Local"
+4. Choisir une image (max 5MB)
+5. Attendre 2-5 secondes
+6. Sauvegarder
+
+✅ L'image est uploadée automatiquement sur ImgBB
+   (hébergement gratuit et illimité)
+
+✅ L'image s'affiche partout dans l'application !
+
+═══════════════════════════════════════════════════════
+  AVANTAGES
+═══════════════════════════════════════════════════════
+
+✅ Gratuit et illimité
+✅ Rapide (2-5 secondes par image)
+✅ Simple (un clic)
+✅ Fiable (URLs permanentes)
+✅ Base de données légère
+
+═══════════════════════════════════════════════════════
+  PLUS D'INFOS
+═══════════════════════════════════════════════════════
+
+- CORRECTION_IMAGES_RESUME.md : Résumé détaillé
+- INSTRUCTIONS_MIGRATION.md : Instructions complètes
+- GUIDE_IMAGES.md : Guide d'utilisation
+
+═══════════════════════════════════════════════════════
+
+C'est tout ! Plus de problèmes d'images manquantes. 🎉
+
+═══════════════════════════════════════════════════════

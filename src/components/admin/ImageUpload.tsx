@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Upload, X } from 'lucide-react';
+import { Upload, X, Loader } from 'lucide-react';
 
 interface ImageUploadProps {
   value: string;
@@ -11,17 +11,47 @@ interface ImageUploadProps {
 export function ImageUpload({ value, onChange, label = 'Image', placeholder = 'https://example.com/photo.jpg' }: ImageUploadProps) {
   const [previewUrl, setPreviewUrl] = useState<string>(value);
   const [uploadMethod, setUploadMethod] = useState<'url' | 'file'>('url');
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const uploadToImgBB = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('image', file);
+
+    const response = await fetch('https://api.imgbb.com/1/upload?key=4d755673c2dc94a168dd770852ca7e62', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error('Échec du téléchargement');
+    }
+
+    const data = await response.json();
+    return data.data.url;
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const dataUrl = event.target?.result as string;
-        setPreviewUrl(dataUrl);
-        onChange(dataUrl);
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError('Fichier trop volumineux (max 5MB)');
+      return;
+    }
+
+    setUploading(true);
+    setUploadError('');
+
+    try {
+      const url = await uploadToImgBB(file);
+      setPreviewUrl(url);
+      onChange(url);
+    } catch (error) {
+      setUploadError('Erreur lors du téléchargement');
+      console.error('Upload error:', error);
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -29,11 +59,13 @@ export function ImageUpload({ value, onChange, label = 'Image', placeholder = 'h
     const url = e.target.value;
     onChange(url);
     setPreviewUrl(url);
+    setUploadError('');
   };
 
   const handleRemove = () => {
     setPreviewUrl('');
     onChange('');
+    setUploadError('');
   };
 
   return (
@@ -75,11 +107,25 @@ export function ImageUpload({ value, onChange, label = 'Image', placeholder = 'h
               type="file"
               accept="image/*"
               onChange={handleFileChange}
-              className="w-full px-4 py-2 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:border-sky-primary transition-colors"
+              disabled={uploading}
+              className="w-full px-4 py-2 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:border-sky-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             />
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              Format: JPG, PNG, WebP (Max 5MB)
-            </p>
+            {uploading && (
+              <div className="flex items-center gap-2 mt-2 text-sky-primary">
+                <Loader className="w-4 h-4 animate-spin" />
+                <span className="text-sm">Téléchargement en cours...</span>
+              </div>
+            )}
+            {uploadError && (
+              <p className="text-xs text-red-500 mt-1">
+                {uploadError}
+              </p>
+            )}
+            {!uploadError && !uploading && (
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Format: JPG, PNG, WebP (Max 5MB) - Hébergé gratuitement sur ImgBB
+              </p>
+            )}
           </div>
         ) : (
           <input
