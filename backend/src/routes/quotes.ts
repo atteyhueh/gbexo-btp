@@ -19,35 +19,43 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
 });
 
 router.post('/', async (req: AuthRequest, res: Response) => {
+  let connection;
   try {
     const { name, email, company, project_type, description } = req.body;
-    const connection = await pool.getConnection();
+    console.log('Creating quote:', { name, email, project_type });
+
+    connection = await pool.getConnection();
 
     const [result]: any = await connection.execute(
       'INSERT INTO quotes (name, email, company, project_type, description) VALUES (?, ?, ?, ?, ?)',
       [name, email, company || '', project_type || '', description]
     );
 
-    connection.release();
     res.json({ id: result.insertId, message: 'Quote request submitted successfully' });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to submit quote request' });
+    console.error('Error creating quote:', error);
+    res.status(500).json({ error: 'Failed to submit quote request', details: error instanceof Error ? error.message : String(error) });
+  } finally {
+    if (connection) connection.release();
   }
 });
 
 router.delete('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
+  let connection;
   try {
     const { id } = req.params;
-    const connection = await pool.getConnection();
+    console.log('Deleting quote:', id);
+
+    connection = await pool.getConnection();
 
     await connection.execute('DELETE FROM quotes WHERE id = ?', [id]);
 
-    connection.release();
     res.json({ message: 'Quote deleted' });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to delete quote' });
+    console.error('Error deleting quote:', error);
+    res.status(500).json({ error: 'Failed to delete quote', details: error instanceof Error ? error.message : String(error) });
+  } finally {
+    if (connection) connection.release();
   }
 });
 

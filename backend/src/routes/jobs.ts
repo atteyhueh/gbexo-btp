@@ -58,117 +58,127 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
 });
 
 router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
+  let connection;
   try {
-    const { 
-      title, 
-      department, 
-      contract_type, 
-      description, 
-      location, 
-      salary_range, 
-      is_open, 
-      requirements, 
-      responsibilities 
+    const {
+      title,
+      department,
+      contract_type,
+      description,
+      location,
+      salary_range,
+      is_open,
+      requirements,
+      responsibilities
     } = req.body;
-    
-    const connection = await pool.getConnection();
+    console.log('Creating job:', { title, department, location });
+
+    connection = await pool.getConnection();
 
     const [result]: any = await connection.execute(
       `INSERT INTO job_openings (
-        title, 
-        department, 
-        contract_type, 
-        description, 
-        location, 
-        salary_range, 
-        is_open, 
-        requirements, 
+        title,
+        department,
+        contract_type,
+        description,
+        location,
+        salary_range,
+        is_open,
+        requirements,
         responsibilities
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        title, 
-        department, 
-        contract_type, 
-        description, 
-        location, 
-        salary_range || null, 
-        is_open !== undefined ? is_open : true, 
-        JSON.stringify(requirements || []), 
+        title,
+        department,
+        contract_type,
+        description,
+        location,
+        salary_range || null,
+        is_open !== undefined ? is_open : true,
+        JSON.stringify(requirements || []),
         JSON.stringify(responsibilities || [])
       ]
     );
 
-    connection.release();
     res.json({ id: result.insertId, ...req.body });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to create job' });
+    console.error('Error creating job:', error);
+    res.status(500).json({ error: 'Failed to create job', details: error instanceof Error ? error.message : String(error) });
+  } finally {
+    if (connection) connection.release();
   }
 });
 
 router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
+  let connection;
   try {
     const { id } = req.params;
-    const { 
-      title, 
-      department, 
-      contract_type, 
-      description, 
-      location, 
-      salary_range, 
-      is_open, 
-      requirements, 
-      responsibilities 
+    const {
+      title,
+      department,
+      contract_type,
+      description,
+      location,
+      salary_range,
+      is_open,
+      requirements,
+      responsibilities
     } = req.body;
-    
-    const connection = await pool.getConnection();
+    console.log('Updating job:', id, { title, department });
+
+    connection = await pool.getConnection();
 
     await connection.execute(
-      `UPDATE job_openings SET 
-        title = ?, 
-        department = ?, 
-        contract_type = ?, 
-        description = ?, 
-        location = ?, 
-        salary_range = ?, 
-        is_open = ?, 
-        requirements = ?, 
-        responsibilities = ? 
+      `UPDATE job_openings SET
+        title = ?,
+        department = ?,
+        contract_type = ?,
+        description = ?,
+        location = ?,
+        salary_range = ?,
+        is_open = ?,
+        requirements = ?,
+        responsibilities = ?
       WHERE id = ?`,
       [
-        title, 
-        department, 
-        contract_type, 
-        description, 
-        location, 
-        salary_range || null, 
-        is_open, 
-        JSON.stringify(requirements || []), 
-        JSON.stringify(responsibilities || []), 
+        title,
+        department,
+        contract_type,
+        description,
+        location,
+        salary_range || null,
+        is_open,
+        JSON.stringify(requirements || []),
+        JSON.stringify(responsibilities || []),
         id
       ]
     );
 
-    connection.release();
     res.json({ id, ...req.body });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to update job' });
+    console.error('Error updating job:', error);
+    res.status(500).json({ error: 'Failed to update job', details: error instanceof Error ? error.message : String(error) });
+  } finally {
+    if (connection) connection.release();
   }
 });
 
 router.delete('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
+  let connection;
   try {
     const { id } = req.params;
-    const connection = await pool.getConnection();
+    console.log('Deleting job:', id);
+
+    connection = await pool.getConnection();
 
     await connection.execute('DELETE FROM job_openings WHERE id = ?', [id]);
 
-    connection.release();
     res.json({ message: 'Job deleted' });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to delete job' });
+    console.error('Error deleting job:', error);
+    res.status(500).json({ error: 'Failed to delete job', details: error instanceof Error ? error.message : String(error) });
+  } finally {
+    if (connection) connection.release();
   }
 });
 

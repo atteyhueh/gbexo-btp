@@ -19,54 +19,66 @@ router.get('/', async (req: AuthRequest, res: Response) => {
 });
 
 router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
+  let connection;
   try {
     const { title, description, icon, image_url, order_index, is_active } = req.body;
-    const connection = await pool.getConnection();
+    console.log('Creating service:', { title, icon, image_url });
+
+    connection = await pool.getConnection();
 
     const [result]: any = await connection.execute(
       'INSERT INTO services (title, description, icon_name, image_url, order_index, is_active) VALUES (?, ?, ?, ?, ?, ?)',
       [title, description, icon, image_url || null, order_index || 0, is_active !== false]
     );
 
-    connection.release();
     res.json({ id: result.insertId, ...req.body });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to create service' });
+    console.error('Error creating service:', error);
+    res.status(500).json({ error: 'Failed to create service', details: error instanceof Error ? error.message : String(error) });
+  } finally {
+    if (connection) connection.release();
   }
 });
 
 router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
+  let connection;
   try {
     const { id } = req.params;
     const { title, description, icon, image_url, order_index, is_active } = req.body;
-    const connection = await pool.getConnection();
+    console.log('Updating service:', id, { title, icon });
+
+    connection = await pool.getConnection();
 
     await connection.execute(
       'UPDATE services SET title = ?, description = ?, icon_name = ?, image_url = ?, order_index = ?, is_active = ? WHERE id = ?',
       [title, description, icon, image_url || null, order_index, is_active, id]
     );
 
-    connection.release();
     res.json({ id, ...req.body });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to update service' });
+    console.error('Error updating service:', error);
+    res.status(500).json({ error: 'Failed to update service', details: error instanceof Error ? error.message : String(error) });
+  } finally {
+    if (connection) connection.release();
   }
 });
 
 router.delete('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
+  let connection;
   try {
     const { id } = req.params;
-    const connection = await pool.getConnection();
+    console.log('Deleting service:', id);
+
+    connection = await pool.getConnection();
 
     await connection.execute('DELETE FROM services WHERE id = ?', [id]);
 
-    connection.release();
     res.json({ message: 'Service deleted' });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to delete service' });
+    console.error('Error deleting service:', error);
+    res.status(500).json({ error: 'Failed to delete service', details: error instanceof Error ? error.message : String(error) });
+  } finally {
+    if (connection) connection.release();
   }
 });
 

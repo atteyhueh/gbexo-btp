@@ -47,55 +47,67 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
 });
 
 router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
+  let connection;
   try {
     const { title, description, location, category, project_type, client_name, image_url, status, duration_months, budget, team_size, featured, order_index, technologies } = req.body;
-    const connection = await pool.getConnection();
+    console.log('Creating project:', { title, category, location });
+
+    connection = await pool.getConnection();
 
     const [result]: any = await connection.execute(
       'INSERT INTO projects (title, description, location, category, project_type, client_name, thumbnail_url, featured, order_index, technologies) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [title, description, location, category, project_type, client_name, image_url, featured || false, order_index || 0, JSON.stringify(technologies || [])]
     );
 
-    connection.release();
     res.json({ id: result.insertId, ...req.body });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to create project' });
+    console.error('Error creating project:', error);
+    res.status(500).json({ error: 'Failed to create project', details: error instanceof Error ? error.message : String(error) });
+  } finally {
+    if (connection) connection.release();
   }
 });
 
 router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
+  let connection;
   try {
     const { id } = req.params;
     const { title, description, location, category, project_type, client_name, image_url, status, duration_months, budget, team_size, featured, order_index, technologies } = req.body;
-    const connection = await pool.getConnection();
+    console.log('Updating project:', id, { title, category });
+
+    connection = await pool.getConnection();
 
     await connection.execute(
       'UPDATE projects SET title = ?, description = ?, location = ?, category = ?, project_type = ?, client_name = ?, thumbnail_url = ?, featured = ?, order_index = ?, technologies = ? WHERE id = ?',
       [title, description, location, category, project_type, client_name, image_url, featured, order_index, JSON.stringify(technologies || []), id]
     );
 
-    connection.release();
     res.json({ id, ...req.body });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to update project' });
+    console.error('Error updating project:', error);
+    res.status(500).json({ error: 'Failed to update project', details: error instanceof Error ? error.message : String(error) });
+  } finally {
+    if (connection) connection.release();
   }
 });
 
 router.delete('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
+  let connection;
   try {
     const { id } = req.params;
-    const connection = await pool.getConnection();
+    console.log('Deleting project:', id);
+
+    connection = await pool.getConnection();
 
     await connection.execute('DELETE FROM project_images WHERE project_id = ?', [id]);
     await connection.execute('DELETE FROM projects WHERE id = ?', [id]);
 
-    connection.release();
     res.json({ message: 'Project deleted' });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to delete project' });
+    console.error('Error deleting project:', error);
+    res.status(500).json({ error: 'Failed to delete project', details: error instanceof Error ? error.message : String(error) });
+  } finally {
+    if (connection) connection.release();
   }
 });
 
