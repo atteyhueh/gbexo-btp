@@ -4,6 +4,14 @@ import { AuthRequest, authMiddleware } from '../middleware/auth.js';
 
 const router = Router();
 
+// Helper function to parse project data
+const parseProject = (project: any) => {
+  return {
+    ...project,
+    technologies: project.technologies ? JSON.parse(project.technologies) : []
+  };
+};
+
 router.get('/', async (req: AuthRequest, res: Response) => {
   try {
     const connection = await pool.getConnection();
@@ -11,7 +19,11 @@ router.get('/', async (req: AuthRequest, res: Response) => {
       'SELECT * FROM projects ORDER BY order_index ASC'
     );
     connection.release();
-    res.json(projects);
+    
+    // Parse technologies for each project
+    const parsedProjects = projects.map(parseProject);
+    
+    res.json(parsedProjects);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to fetch projects' });
@@ -39,7 +51,11 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
     );
 
     connection.release();
-    res.json({ ...project[0], images });
+    
+    // Parse technologies before sending
+    const parsedProject = parseProject(project[0]);
+    
+    res.json({ ...parsedProject, images });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to fetch project' });
@@ -59,7 +75,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       [title, description, location, category, project_type, client_name, image_url, featured || false, order_index || 0, JSON.stringify(technologies || [])]
     );
 
-    res.json({ id: result.insertId, ...req.body });
+    res.json({ id: result.insertId, ...req.body, technologies: technologies || [] });
   } catch (error) {
     console.error('Error creating project:', error);
     res.status(500).json({ error: 'Failed to create project', details: error instanceof Error ? error.message : String(error) });
@@ -82,7 +98,7 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
       [title, description, location, category, project_type, client_name, image_url, featured, order_index, JSON.stringify(technologies || []), id]
     );
 
-    res.json({ id, ...req.body });
+    res.json({ id, ...req.body, technologies: technologies || [] });
   } catch (error) {
     console.error('Error updating project:', error);
     res.status(500).json({ error: 'Failed to update project', details: error instanceof Error ? error.message : String(error) });
