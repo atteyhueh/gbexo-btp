@@ -1,6 +1,7 @@
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import { ChevronDown, HardHat, Building2, Truck, Bell, X } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 
 type Announcement = {
@@ -13,6 +14,7 @@ type Announcement = {
 };
 
 export default function Hero() {
+  const navigate = useNavigate();
   const { scrollY } = useScroll();
   const y = useTransform(scrollY, [0, 500], [0, 150]);
   const opacity = useTransform(scrollY, [0, 300], [1, 0]);
@@ -63,13 +65,7 @@ export default function Hero() {
   };
 
   const handleViewMore = (announcement: Announcement) => {
-    if (announcement.link_url) {
-      if (announcement.link_url.startsWith('http')) {
-        window.open(announcement.link_url, '_blank');
-      } else {
-        window.location.href = announcement.link_url;
-      }
-    }
+    navigate(`/announcements/${announcement.id}`);
     setIsOpen(false);
   };
 
@@ -290,7 +286,7 @@ export default function Hero() {
             className="bg-gradient-to-r from-yellow-construction to-yellow-dark text-black-solid px-8 py-4 rounded-full font-bold text-lg shadow-3d hover:shadow-3d-hover transition-all"
             whileHover={{ scale: 1.05, y: -3 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => window.location.href = '/quote'}
+            onClick={() => navigate('/quote')}
           >
             Demander un Devis
           </motion.button>
