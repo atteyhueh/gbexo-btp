@@ -140,6 +140,14 @@ CREATE TABLE announcements (
   INDEX idx_created_at (created_at)
 );
 
+ALTER TABLE job_openings 
+ADD COLUMN salary_range VARCHAR(100) AFTER location,
+ADD COLUMN responsibilities JSON AFTER requirements;
+
+
+
+
+
 -- Données de test pour les annonces
 INSERT INTO announcements (title, content, cover_image_url, is_urgent, link_url) VALUES
 ('Recrutement Massif en Cours', 'GBEXO BTP recrute 50+ nouveaux talents pour ses projets d''envergure. Postulez dès maintenant !', 'https://images.pexels.com/photos/3183197/pexels-photo-3183197.jpeg?auto=compress&cs=tinysrgb&w=800', true, '/careers'),
