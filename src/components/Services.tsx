@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion';
-import { Building2, Construction, Wrench, FileText, Loader2 } from 'lucide-react';
+import { Building2, Construction, Wrench, FileText, Loader2, ArrowRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { api } from '../lib/api';
+import { useNavigate } from 'react-router-dom';
 
 // Map des icônes pour les différents types de services
 const iconMap: { [key: string]: any } = {
@@ -21,7 +22,13 @@ interface Service {
   order_index?: number;
 }
 
-export default function Services() {
+interface ServicesProps {
+  limit?: number; // Nombre de services à afficher
+  showViewMore?: boolean; // Afficher le bouton "Voir plus"
+}
+
+export default function Services({ limit, showViewMore = false }: ServicesProps) {
+  const navigate = useNavigate();
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
@@ -34,15 +41,13 @@ export default function Services() {
         setLoading(true);
         const data = await api.services.list();
         
-        // 🔧 Parser les features si elles sont stockées en JSON
+        // Parser les features si elles sont stockées en JSON
         const parsedServices = data.map((service: any) => {
           let features = [];
           
-          // Si features est déjà un tableau
           if (Array.isArray(service.features)) {
             features = service.features;
           } 
-          // Si features est une chaîne JSON
           else if (typeof service.features === 'string' && service.features.trim() !== '') {
             try {
               const parsed = JSON.parse(service.features);
@@ -77,6 +82,9 @@ export default function Services() {
     return iconMap[iconName] || Building2;
   };
 
+  // Limiter le nombre de services si nécessaire
+  const displayedServices = limit ? services.slice(0, limit) : services;
+
   return (
     <section id="services" className="py-20 bg-white dark:bg-gray-construction relative overflow-hidden">
       <div className="absolute inset-0 bg-grid-pattern opacity-5" />
@@ -105,15 +113,15 @@ export default function Services() {
           <div className="text-center py-20">
             <p className="text-red-500 text-lg">{error}</p>
           </div>
-        ) : services.length === 0 ? (
+        ) : displayedServices.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-gray-500 dark:text-gray-400 text-lg">
               Aucun service disponible pour le moment
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 perspective-1000">
-            {services.map((service, index) => {
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 perspective-1000">
+            {displayedServices.map((service, index) => {
               const Icon = getIcon(service.icon);
               return (
                 <motion.div
@@ -158,7 +166,7 @@ export default function Services() {
 
                     {service.features && service.features.length > 0 && (
                       <ul className="space-y-2">
-                        {service.features.map((feature, featureIndex) => (
+                        {service.features.slice(0, 3).map((feature, featureIndex) => (
                           <motion.li
                             key={featureIndex}
                             className="text-sm text-gray-500 dark:text-gray-400 flex items-center"
@@ -181,7 +189,7 @@ export default function Services() {
                       transition={{ duration: 0.3 }}
                     >
                       <button
-                        onClick={() => window.location.href = '/services'}
+                        onClick={() => navigate('/services')}
                         className="text-sky-primary font-semibold text-sm hover:text-sky-dark transition-colors flex items-center"
                       >
                         En savoir plus
@@ -198,6 +206,26 @@ export default function Services() {
               );
             })}
           </div>
+        )}
+
+        {showViewMore && services.length > (limit || 0) && (
+          <motion.div
+            className="text-center mt-12"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3, duration: 0.6 }}
+          >
+            <motion.button
+              className="bg-gradient-to-r from-sky-primary to-sky-dark text-white px-8 py-4 rounded-full font-bold text-lg shadow-3d hover:shadow-3d-hover transition-all inline-flex items-center gap-2"
+              whileHover={{ scale: 1.05, y: -3 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => navigate('/services')}
+            >
+              Voir tous nos services
+              <ArrowRight className="w-5 h-5" />
+            </motion.button>
+          </motion.div>
         )}
 
         <motion.div

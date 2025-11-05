@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, AlertCircle, Image as ImageIcon, X } from 'lucide-react';
+import { Plus, Edit, Trash2, AlertCircle, X, Upload, Video, Loader, Image as ImageIcon } from 'lucide-react';
 import { api } from '../../lib/api';
-import AnnouncementMediaManager from './AnnouncementMediaManager';
+import { ImageUpload } from './ImageUpload';
 
 type MediaItem = {
-  id: number;
-  announcement_id: number;
+  id?: number;
+  announcement_id?: number;
   media_url: string;
   media_type: 'image' | 'video';
   is_featured: boolean;
   order_index: number;
+  file?: File;
+  preview?: string;
 };
 
 type Announcement = {
@@ -29,6 +31,8 @@ export default function AnnouncementsManagement() {
   const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
   const [loading, setLoading] = useState(false);
   const [media, setMedia] = useState<MediaItem[]>([]);
+  const [pendingMedia, setPendingMedia] = useState<MediaItem[]>([]);
+  const [uploadProgress, setUploadProgress] = useState('');
   const [formData, setFormData] = useState<Announcement>({
     title: '',
     content: '',
@@ -55,16 +59,172 @@ export default function AnnouncementsManagement() {
     }
   };
 
+  // Upload vers ImgBB pour les images
+  const uploadToImgBB = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('image', file);
+
+    const response = await fetch('https://api.imgbb.com/1/upload?key=251ac2f178688b4ed065eefc7cff049e', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error('Échec du téléchargement sur ImgBB');
+    }
+
+    const data = await response.json();
+    return data.data.url;
+  };
+
+  // Upload vers Cloudinary pour les vidéos
+  const uploadToCloudinary = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', 'Gbexobtp'); // À configurer dans Cloudinary
+    formData.append('cloud_name', 'dcfk7tioq'); // Votre cloud name Cloudinary
+
+    const response = await fetch(
+      'https://api.cloudinary.com/v1_1/dcfk7tioq/video/upload',
+      {
+        method: 'POST',
+        body: formData,
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error('Échec du téléchargement sur Cloudinary');
+    }
+
+    const data = await response.json();
+    return data.secure_url;
+  };
+
+  // Upload automatique selon le type
+  const uploadFile = async (file: File): Promise<string> => {
+    const isVideo = file.type.startsWith('video/');
+    
+    if (isVideo) {
+      return await uploadToCloudinary(file);
+    } else {
+      return await uploadToImgBB(file);
+    }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    const newMedia: MediaItem[] = [];
+    
+    files.forEach((file, index) => {
+      const isVideo = file.type.startsWith('video/');
+      const isImage = file.type.startsWith('image/');
+
+      if (!isVideo && !isImage) {
+        alert(`${file.name}: Format non supporté`);
+        return;
+      }
+
+      // Limite: 5MB pour images (ImgBB), 100MB pour vidéos (Cloudinary)
+      const maxSize = isVideo ? 100 * 1024 * 1024 : 5 * 1024 * 1024;
+      if (file.size > maxSize) {
+        alert(`${file.name}: Fichier trop volumineux (max ${isVideo ? '100MB' : '5MB'})`);
+        return;
+      }
+
+      const mediaItem: MediaItem = {
+        media_url: '',
+        media_type: isVideo ? 'video' : 'image',
+        is_featured: false,
+        order_index: pendingMedia.length + media.length + index,
+        file: file
+      };
+
+      // Créer un aperçu pour les images
+      if (isImage) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          mediaItem.preview = e.target?.result as string;
+          setPendingMedia(prev => [...prev.filter(m => m.file !== file), mediaItem]);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        mediaItem.preview = 'video';
+      }
+
+      newMedia.push(mediaItem);
+    });
+
+    setPendingMedia(prev => [...prev, ...newMedia]);
+  };
+
+  const removePendingMedia = (index: number) => {
+    setPendingMedia(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const removeExistingMedia = async (mediaId: number) => {
+    if (!confirm('Supprimer ce média ?')) return;
+
+    try {
+      await api.announcements.media.delete(
+        editingAnnouncement!.id!.toString(),
+        mediaId.toString()
+      );
+      setMedia(prev => prev.filter(m => m.id !== mediaId));
+      alert('Média supprimé');
+    } catch (error) {
+      console.error('Error deleting media:', error);
+      alert('Erreur lors de la suppression');
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
       setLoading(true);
       
+      let announcementId: number;
+
+      // Créer ou mettre à jour l'annonce
       if (editingAnnouncement && editingAnnouncement.id) {
         await api.announcements.update(editingAnnouncement.id.toString(), formData);
+        announcementId = editingAnnouncement.id;
       } else {
-        await api.announcements.create(formData);
+        const result = await api.announcements.create(formData);
+        announcementId = result.id;
+      }
+
+      // Upload des médias en attente avec le bon service
+      if (pendingMedia.length > 0) {
+        setUploadProgress('Upload des médias en cours...');
+        
+        for (let i = 0; i < pendingMedia.length; i++) {
+          const mediaItem = pendingMedia[i];
+          const isVideo = mediaItem.media_type === 'video';
+          const serviceName = isVideo ? 'Cloudinary' : 'ImgBB';
+          
+          setUploadProgress(
+            `Upload ${i + 1}/${pendingMedia.length}: ${mediaItem.file?.name || 'média'} (${serviceName})`
+          );
+
+          try {
+            // Upload vers le bon service selon le type
+            const url = await uploadFile(mediaItem.file!);
+            
+            // Ajouter le média à l'annonce
+            await api.announcements.media.add(announcementId.toString(), {
+              media_url: url,
+              media_type: mediaItem.media_type,
+              is_featured: mediaItem.is_featured,
+              order_index: mediaItem.order_index,
+            });
+          } catch (error) {
+            console.error(`Error uploading ${mediaItem.file?.name}:`, error);
+            alert(`Erreur d'upload: ${mediaItem.file?.name}`);
+          }
+        }
       }
 
       await fetchAnnouncements();
@@ -75,6 +235,7 @@ export default function AnnouncementsManagement() {
       alert('Erreur lors de l\'enregistrement de l\'annonce');
     } finally {
       setLoading(false);
+      setUploadProgress('');
     }
   };
 
@@ -122,6 +283,7 @@ export default function AnnouncementsManagement() {
       });
       setMedia([]);
     }
+    setPendingMedia([]);
     setIsModalOpen(true);
   };
 
@@ -129,6 +291,8 @@ export default function AnnouncementsManagement() {
     setIsModalOpen(false);
     setEditingAnnouncement(null);
     setMedia([]);
+    setPendingMedia([]);
+    setUploadProgress('');
   };
 
   const formatDate = (dateString?: string) => {
@@ -253,14 +417,14 @@ export default function AnnouncementsManagement() {
         {/* Modal */}
         {isModalOpen && (
           <div
-            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto"
             onClick={closeModal}
           >
             <div
-              className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-4xl w-full my-8"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="sticky top-0 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black px-6 py-4 flex items-center justify-between">
+              <div className="sticky top-0 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black px-6 py-4 flex items-center justify-between rounded-t-xl">
                 <h2 className="text-2xl font-bold">
                   {editingAnnouncement ? 'Modifier l\'annonce' : 'Nouvelle annonce'}
                 </h2>
@@ -272,7 +436,7 @@ export default function AnnouncementsManagement() {
                 </button>
               </div>
 
-              <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              <form onSubmit={handleSubmit} className="p-6 space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Titre <span className="text-red-500">*</span>
@@ -301,32 +465,12 @@ export default function AnnouncementsManagement() {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    <ImageIcon className="w-4 h-4 inline mr-1" />
-                    URL de l'image de couverture <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="url"
-                    required
-                    value={formData.cover_image_url}
-                    onChange={(e) => setFormData({ ...formData, cover_image_url: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 dark:bg-gray-700 dark:text-white"
-                    placeholder="https://example.com/image.jpg"
-                  />
-                  {formData.cover_image_url && (
-                    <div className="mt-2">
-                      <img 
-                        src={formData.cover_image_url} 
-                        alt="Aperçu" 
-                        className="w-32 h-32 object-cover rounded-lg"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                        }}
-                      />
-                    </div>
-                  )}
-                </div>
+                <ImageUpload
+                  value={formData.cover_image_url}
+                  onChange={(url) => setFormData({ ...formData, cover_image_url: url })}
+                  label="Image de couverture *"
+                  placeholder="https://example.com/image.jpg"
+                />
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -367,18 +511,119 @@ export default function AnnouncementsManagement() {
                   </label>
                 </div>
 
-                {editingAnnouncement && editingAnnouncement.id && (
-                  <div className="border-t border-gray-300 dark:border-gray-600 pt-4 mt-4">
-                    <AnnouncementMediaManager
-                      announcementId={editingAnnouncement.id}
-                      media={media}
-                      onMediaAdded={() => fetchMediaForAnnouncement(editingAnnouncement.id!)}
-                      isLoading={loading}
-                    />
+                {/* Section Médias */}
+                <div className="border-t border-gray-300 dark:border-gray-600 pt-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                      Photos et Vidéos {editingAnnouncement ? `(${media.length})` : ''}
+                    </h3>
+                    <label className="flex items-center gap-2 bg-yellow-500 text-black px-4 py-2 rounded-lg hover:bg-yellow-400 transition-colors cursor-pointer">
+                      <Upload className="w-4 h-4" />
+                      Ajouter des fichiers
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*,video/*"
+                        onChange={handleFileSelect}
+                        className="hidden"
+                      />
+                    </label>
                   </div>
-                )}
 
-                <div className="flex gap-3 pt-4">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+                    📷 Images: ImgBB (Max 5MB) | 🎥 Vidéos: Cloudinary (Max 100MB)
+                  </p>
+
+                  {uploadProgress && (
+                    <div className="flex items-center gap-2 mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                      <Loader className="w-5 h-5 animate-spin text-yellow-600" />
+                      <span className="text-sm text-yellow-700 dark:text-yellow-400">{uploadProgress}</span>
+                    </div>
+                  )}
+
+                  {/* Médias existants (en édition) */}
+                  {editingAnnouncement && media.length > 0 && (
+                    <div className="mb-4">
+                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Médias existants</p>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                        {media.map((item) => (
+                          <div key={item.id} className="relative group rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700">
+                            {item.media_type === 'video' ? (
+                              <div className="w-full h-32 flex items-center justify-center bg-gray-800">
+                                <Video className="w-8 h-8 text-gray-400" />
+                              </div>
+                            ) : (
+                              <img
+                                src={item.media_url}
+                                alt="Media"
+                                className="w-full h-32 object-cover"
+                                onError={(e) => {
+                                  e.currentTarget.src = 'https://via.placeholder.com/128?text=Image';
+                                }}
+                              />
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => removeExistingMedia(item.id!)}
+                              className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Médias en attente d'upload */}
+                  {pendingMedia.length > 0 && (
+                    <div>
+                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {pendingMedia.length} fichier(s) à uploader
+                      </p>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                        {pendingMedia.map((item, index) => (
+                          <div key={index} className="relative group rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700">
+                            {item.media_type === 'video' ? (
+                              <div className="w-full h-32 flex flex-col items-center justify-center bg-gray-800">
+                                <Video className="w-8 h-8 text-gray-400" />
+                                <span className="text-xs text-gray-400 mt-1 truncate px-1 max-w-full">
+                                  {item.file?.name}
+                                </span>
+                              </div>
+                            ) : item.preview && item.preview !== 'video' ? (
+                              <img
+                                src={item.preview}
+                                alt={item.file?.name}
+                                className="w-full h-32 object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-32 flex items-center justify-center">
+                                <ImageIcon className="w-8 h-8 text-gray-400" />
+                              </div>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => removePendingMedia(index)}
+                              className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {media.length === 0 && pendingMedia.length === 0 && (
+                    <div className="text-center py-8 text-gray-500 dark:text-gray-400 text-sm">
+                      <ImageIcon className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                      Aucun média ajouté
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex gap-3 pt-4 border-t border-gray-300 dark:border-gray-600">
                   <button
                     type="button"
                     onClick={closeModal}
@@ -392,7 +637,7 @@ export default function AnnouncementsManagement() {
                     disabled={loading}
                     className="flex-1 px-6 py-3 bg-yellow-500 text-black font-semibold rounded-lg hover:bg-yellow-400 transition-colors disabled:opacity-50"
                   >
-                    {loading ? 'Chargement...' : (editingAnnouncement ? 'Mettre à jour' : 'Créer')}
+                    {loading ? 'Enregistrement...' : (editingAnnouncement ? 'Mettre à jour' : 'Créer')}
                   </button>
                 </div>
               </form>

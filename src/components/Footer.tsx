@@ -145,7 +145,7 @@ export default function Footer() {
               <li>
                 <a href="tel:+22990123456" className="flex items-start text-gray-400 hover:text-yellow-construction transition-colors group">
                   <Phone className="w-5 h-5 mr-3 mt-0.5 flex-shrink-0 group-hover:animate-pulse" />
-                  <span>+229 90 12 34 56</span>
+                  <span>+229 01 40 93 56 56</span>
                 </a>
               </li>
               <li>
@@ -156,7 +156,7 @@ export default function Footer() {
               </li>
               <li className="flex items-start text-gray-400">
                 <MapPin className="w-5 h-5 mr-3 mt-0.5 flex-shrink-0" />
-                <span>Boulevard de la Marina, Cotonou, Bénin</span>
+                <span>Jéricho, rue pavé à côté de la BIBE Jéricho Cotonou - Bénin</span>
               </li>
             </ul>
           </motion.div>

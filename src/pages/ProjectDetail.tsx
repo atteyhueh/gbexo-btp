@@ -1,7 +1,7 @@
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useProjectById } from '../hooks/useProjects';
-import { ChevronLeft, Share2, MapPin, Calendar, Users, Video as VideoIcon } from 'lucide-react';
+import { ChevronLeft, Share2, MapPin, X, ChevronRight, Video as VideoIcon } from 'lucide-react';
 import { useState } from 'react';
 
 export default function ProjectDetail() {
@@ -9,6 +9,8 @@ export default function ProjectDetail() {
   const navigate = useNavigate();
   const { project, images, isLoading } = useProjectById(id || '');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalImageIndex, setModalImageIndex] = useState(0);
 
   if (isLoading) {
     return (
@@ -37,7 +39,6 @@ export default function ProjectDetail() {
     );
   }
 
-  // 🎯 OPTION 2 : Combiner thumbnail + galerie d'images
   const allImages = project.thumbnail_url 
     ? [{ image_url: project.thumbnail_url, order_index: 0, id: 0, project_id: project.id }, ...images]
     : images;
@@ -45,6 +46,23 @@ export default function ProjectDetail() {
   const currentImage = allImages.length > 0
     ? allImages[currentImageIndex]
     : { image_url: 'https://placehold.co/800x600/cccccc/white?text=Aucune+image', order_index: 0, id: 0, project_id: project.id };
+
+  const openModal = (index: number) => {
+    setModalImageIndex(index);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const nextImage = () => {
+    setModalImageIndex((prev) => (prev + 1) % allImages.length);
+  };
+
+  const prevImage = () => {
+    setModalImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black-solid pt-24">
@@ -61,22 +79,27 @@ export default function ProjectDetail() {
         <div className="grid md:grid-cols-3 gap-8">
           <div className="md:col-span-2">
             <motion.div
-              className="relative rounded-2xl overflow-hidden shadow-3d mb-6 h-96 bg-gray-900"
+              className="relative rounded-2xl overflow-hidden shadow-3d mb-6 h-96 bg-gray-900 cursor-pointer"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.6 }}
+              onClick={() => (currentImage as any).media_type !== 'video' && openModal(currentImageIndex)}
             >
               {(currentImage as any).media_type === 'video' ? (
                 <video
                   src={currentImage.image_url}
                   className="w-full h-full object-cover"
                   controls
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
                 />
               ) : (
                 <img
                   src={currentImage.image_url}
                   alt={project.title}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                 />
               )}
               {allImages.length > 1 && (
@@ -257,6 +280,74 @@ export default function ProjectDetail() {
           </motion.div>
         </div>
       </div>
+
+      {/* Modal Lightbox pour les images */}
+      <AnimatePresence>
+        {isModalOpen && (
+          <motion.div
+            className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={closeModal}
+          >
+            <motion.button
+              className="absolute top-4 right-4 text-white bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors z-10"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={closeModal}
+            >
+              <X className="w-6 h-6" />
+            </motion.button>
+
+            <motion.div
+              className="relative max-w-7xl w-full h-full flex items-center justify-center"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img
+                src={allImages[modalImageIndex].image_url}
+                alt={project.title}
+                className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
+              />
+
+              {allImages.length > 1 && (
+                <>
+                  <motion.button
+                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white p-3 rounded-full transition-colors"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      prevImage();
+                    }}
+                  >
+                    <ChevronLeft className="w-8 h-8" />
+                  </motion.button>
+
+                  <motion.button
+                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white p-3 rounded-full transition-colors"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      nextImage();
+                    }}
+                  >
+                    <ChevronRight className="w-8 h-8" />
+                  </motion.button>
+
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded-full text-sm font-semibold">
+                    {modalImageIndex + 1} / {allImages.length}
+                  </div>
+                </>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

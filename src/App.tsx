@@ -19,7 +19,6 @@ import QuotePage from './pages/QuotePage';
 import Login from './pages/admin/Login';
 import Dashboard from './pages/admin/Dashboard';
 
-
 function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
@@ -78,7 +77,8 @@ function App() {
                         <Route path="/service/:id" element={<ServiceDetail />} />
                         <Route path="/projects" element={<ProjectsPage />} />
                         <Route path="/project/:id" element={<ProjectDetail />} />
-                        <Route path="/announcement/:id" element={<AnnouncementDetail />} />
+                        {/* ✅ Changé /announcement/:id en /announcements/:id */}
+                        <Route path="/announcements/:id" element={<AnnouncementDetail />} />
                         <Route path="/about" element={<AboutPage />} />
                         <Route path="/careers" element={<CareersPage />} />
                         <Route path="/quote" element={<QuotePage />} />

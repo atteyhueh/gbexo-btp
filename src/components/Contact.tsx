@@ -48,8 +48,8 @@ export default function Contact() {
     {
       icon: Phone,
       title: 'Téléphone',
-      value: '+228 90 12 34 56',
-      link: 'tel:+22890123456'
+      value: '+229 01 40 93 56 56',
+      link: 'tel:+2290140935656'
     },
     {
       icon: Mail,
@@ -60,7 +60,7 @@ export default function Contact() {
     {
       icon: MapPin,
       title: 'Adresse',
-      value: 'Boulevard du 13 Janvier, Lomé, Togo',
+      value: 'Jéricho, rue pavé à côté de la BIBE Jéricho Cotonou - Bénin',
       link: 'https://maps.google.com'
     }
   ];
