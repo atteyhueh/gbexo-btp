@@ -18,7 +18,7 @@ export function ImageUpload({ value, onChange, label = 'Image', placeholder = 'h
     const formData = new FormData();
     formData.append('image', file);
 
-    const response = await fetch('https://api.imgbb.com/1/upload?key=4d755673c2dc94a168dd770852ca7e62', {
+    const response = await fetch('https://api.imgbb.com/1/upload?key=251ac2f178688b4ed065eefc7cff049e', {
       method: 'POST',
       body: formData,
     });

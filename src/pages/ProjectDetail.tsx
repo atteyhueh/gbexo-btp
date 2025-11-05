@@ -37,9 +37,14 @@ export default function ProjectDetail() {
     );
   }
 
-  const currentImage = images.length > 0
-    ? images[currentImageIndex]
-    : { image_url: 'https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg?auto=compress&cs=tinysrgb&w=800' };
+  // 🎯 OPTION 2 : Combiner thumbnail + galerie d'images
+  const allImages = project.thumbnail_url 
+    ? [{ image_url: project.thumbnail_url, order_index: 0, id: 0, project_id: project.id }, ...images]
+    : images;
+
+  const currentImage = allImages.length > 0
+    ? allImages[currentImageIndex]
+    : { image_url: 'https://placehold.co/800x600/cccccc/white?text=Aucune+image', order_index: 0, id: 0, project_id: project.id };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black-solid pt-24">
@@ -66,22 +71,32 @@ export default function ProjectDetail() {
                 alt={project.title}
                 className="w-full h-full object-cover"
               />
+              {allImages.length > 1 && (
+                <div className="absolute bottom-4 right-4 bg-black-solid/70 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                  {currentImageIndex + 1} / {allImages.length}
+                </div>
+              )}
             </motion.div>
 
-            {images.length > 1 && (
+            {allImages.length > 1 && (
               <div className="flex gap-4 overflow-x-auto pb-4">
-                {images.map((img, idx) => (
+                {allImages.map((img, idx) => (
                   <motion.button
-                    key={idx}
+                    key={img.id || idx}
                     onClick={() => setCurrentImageIndex(idx)}
                     className={`flex-shrink-0 w-24 h-24 rounded-lg overflow-hidden border-2 transition-all ${
                       idx === currentImageIndex
-                        ? 'border-yellow-construction'
-                        : 'border-gray-300 dark:border-gray-600'
+                        ? 'border-yellow-construction shadow-lg'
+                        : 'border-gray-300 dark:border-gray-600 hover:border-sky-primary'
                     }`}
                     whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                   >
-                    <img src={img.image_url} alt="" className="w-full h-full object-cover" />
+                    <img 
+                      src={img.image_url} 
+                      alt={`Image ${idx + 1}`} 
+                      className="w-full h-full object-cover" 
+                    />
                   </motion.button>
                 ))}
               </div>
@@ -98,15 +113,26 @@ export default function ProjectDetail() {
               </h1>
 
               <div className="flex flex-wrap gap-4 mb-8">
-                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
-                  <MapPin className="w-5 h-5 text-yellow-construction" />
-                  {project.location}
-                </div>
-                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
-                  <span className="bg-yellow-construction text-black-solid px-3 py-1 rounded-full text-sm font-semibold">
-                    {project.category}
-                  </span>
-                </div>
+                {project.location && (
+                  <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                    <MapPin className="w-5 h-5 text-yellow-construction" />
+                    {project.location}
+                  </div>
+                )}
+                {project.category && (
+                  <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                    <span className="bg-yellow-construction text-black-solid px-3 py-1 rounded-full text-sm font-semibold">
+                      {project.category}
+                    </span>
+                  </div>
+                )}
+                {project.project_type && (
+                  <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                    <span className="bg-sky-primary/10 text-sky-primary px-3 py-1 rounded-full text-sm font-semibold">
+                      {project.project_type}
+                    </span>
+                  </div>
+                )}
               </div>
 
               <div className="prose dark:prose-invert max-w-none">
@@ -156,6 +182,10 @@ export default function ProjectDetail() {
                 Contactez-nous pour un devis personnalisé basé sur cette expertise.
               </p>
               <motion.button
+                onClick={() => {
+                  document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth' });
+                  navigate('/');
+                }}
                 className="w-full bg-yellow-construction text-black-solid px-6 py-3 rounded-full font-bold hover:bg-yellow-dark transition-colors"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -167,15 +197,20 @@ export default function ProjectDetail() {
             <div className="bg-white dark:bg-gray-construction rounded-2xl p-8">
               <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Partager</h3>
               <div className="flex gap-3">
-                {['Facebook', 'Twitter', 'LinkedIn'].map((social) => (
+                {[
+                  { name: 'Facebook', url: `https://facebook.com/sharer/sharer.php?u=${window.location.href}` },
+                  { name: 'Twitter', url: `https://twitter.com/intent/tweet?url=${window.location.href}&text=${project.title}` },
+                  { name: 'LinkedIn', url: `https://linkedin.com/sharing/share-offsite/?url=${window.location.href}` }
+                ].map((social) => (
                   <motion.button
-                    key={social}
+                    key={social.name}
+                    onClick={() => window.open(social.url, '_blank', 'width=600,height=400')}
                     className="flex-1 flex items-center justify-center gap-2 bg-gray-100 dark:bg-gray-700 hover:bg-sky-primary hover:text-white text-gray-700 dark:text-gray-300 py-3 rounded-lg transition-colors font-semibold text-sm"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
                     <Share2 className="w-4 h-4" />
-                    {social}
+                    {social.name}
                   </motion.button>
                 ))}
               </div>
@@ -194,6 +229,15 @@ export default function ProjectDetail() {
                     </span>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {project.featured === 1 && (
+              <div className="bg-gradient-to-br from-yellow-construction to-yellow-dark rounded-2xl p-8 text-black-solid">
+                <h3 className="text-xl font-bold mb-2">⭐ Projet Vedette</h3>
+                <p className="text-sm">
+                  Ce projet fait partie de nos réalisations les plus prestigieuses.
+                </p>
               </div>
             )}
           </motion.div>

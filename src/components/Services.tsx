@@ -1,36 +1,81 @@
 import { motion } from 'framer-motion';
-import { Building2, Construction, Wrench, FileText } from 'lucide-react';
-import { useState } from 'react';
+import { Building2, Construction, Wrench, FileText, Loader2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { api } from '../lib/api';
 
-const services = [
-  {
-    icon: Building2,
-    title: 'Construction & Génie Civil',
-    description: 'Conception et réalisation de bâtiments résidentiels, commerciaux et industriels avec les normes les plus strictes.',
-    features: ['Bâtiments neufs', 'Extensions', 'Structures complexes', 'Normes sismiques']
-  },
-  {
-    icon: Construction,
-    title: 'Travaux Publics & Routes',
-    description: 'Aménagement d\'infrastructures routières, terrassement et travaux de voirie pour les collectivités.',
-    features: ['Routes et autoroutes', 'Ponts et ouvrages', 'Terrassement', 'Voirie urbaine']
-  },
-  {
-    icon: Wrench,
-    title: 'Rénovation & Maintenance',
-    description: 'Réhabilitation et entretien de bâtiments existants pour prolonger leur durée de vie et améliorer leur performance.',
-    features: ['Rénovation complète', 'Mise aux normes', 'Maintenance préventive', 'Modernisation']
-  },
-  {
-    icon: FileText,
-    title: 'Études Techniques & Conception',
-    description: 'Bureau d\'études intégré pour l\'analyse, la conception et le suivi de vos projets de construction.',
-    features: ['Plans et devis', 'Études de faisabilité', 'Suivi de chantier', 'Conseil technique']
-  }
-];
+// Map des icônes pour les différents types de services
+const iconMap: { [key: string]: any } = {
+  'Building2': Building2,
+  'Construction': Construction,
+  'Wrench': Wrench,
+  'FileText': FileText,
+};
+
+interface Service {
+  id: number;
+  title: string;
+  description: string;
+  icon: string;
+  features: string[];
+  category?: string;
+  order_index?: number;
+}
 
 export default function Services() {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [services, setServices] = useState<Service[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Récupérer les services depuis l'API
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        setLoading(true);
+        const data = await api.services.list();
+        
+        // 🔧 Parser les features si elles sont stockées en JSON
+        const parsedServices = data.map((service: any) => {
+          let features = [];
+          
+          // Si features est déjà un tableau
+          if (Array.isArray(service.features)) {
+            features = service.features;
+          } 
+          // Si features est une chaîne JSON
+          else if (typeof service.features === 'string' && service.features.trim() !== '') {
+            try {
+              const parsed = JSON.parse(service.features);
+              features = Array.isArray(parsed) ? parsed : [];
+            } catch (e) {
+              console.warn(`Impossible de parser features pour service ${service.id}`);
+              features = [];
+            }
+          }
+          
+          return {
+            ...service,
+            features
+          };
+        });
+        
+        setServices(parsedServices);
+        setError(null);
+      } catch (err) {
+        console.error('Erreur lors du chargement des services:', err);
+        setError('Impossible de charger les services');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchServices();
+  }, []);
+
+  // Fonction pour obtenir l'icône appropriée
+  const getIcon = (iconName: string) => {
+    return iconMap[iconName] || Building2;
+  };
 
   return (
     <section id="services" className="py-20 bg-white dark:bg-gray-construction relative overflow-hidden">
@@ -52,90 +97,108 @@ export default function Services() {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 perspective-1000">
-          {services.map((service, index) => {
-            const Icon = service.icon;
-            return (
-              <motion.div
-                key={index}
-                className="relative transform-style-3d"
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1, duration: 0.6 }}
-                onMouseEnter={() => setHoveredIndex(index)}
-                onMouseLeave={() => setHoveredIndex(null)}
-              >
+        {loading ? (
+          <div className="flex justify-center items-center py-20">
+            <Loader2 className="w-12 h-12 text-sky-primary animate-spin" />
+          </div>
+        ) : error ? (
+          <div className="text-center py-20">
+            <p className="text-red-500 text-lg">{error}</p>
+          </div>
+        ) : services.length === 0 ? (
+          <div className="text-center py-20">
+            <p className="text-gray-500 dark:text-gray-400 text-lg">
+              Aucun service disponible pour le moment
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 perspective-1000">
+            {services.map((service, index) => {
+              const Icon = getIcon(service.icon);
+              return (
                 <motion.div
-                  className={`h-full bg-white dark:bg-black-solid rounded-2xl p-6 shadow-3d border-2 ${
-                    hoveredIndex === index
-                      ? 'border-yellow-construction'
-                      : 'border-transparent'
-                  } transition-all duration-300 cursor-pointer`}
-                  whileHover={{
-                    y: -10,
-                    rotateX: 5,
-                    rotateY: hoveredIndex === index ? 5 : 0,
-                    scale: 1.02
-                  }}
-                  transition={{ duration: 0.3 }}
+                  key={service.id}
+                  className="relative transform-style-3d"
+                  initial={{ opacity: 0, y: 50 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1, duration: 0.6 }}
+                  onMouseEnter={() => setHoveredIndex(index)}
+                  onMouseLeave={() => setHoveredIndex(null)}
                 >
                   <motion.div
-                    className="w-16 h-16 bg-gradient-to-br from-sky-primary to-sky-dark rounded-xl flex items-center justify-center mb-4"
-                    whileHover={{ rotate: 360, scale: 1.1 }}
-                    transition={{ duration: 0.6 }}
-                  >
-                    <Icon className="w-8 h-8 text-white" strokeWidth={2} />
-                  </motion.div>
-
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
-                    {service.title}
-                  </h3>
-
-                  <p className="text-gray-600 dark:text-gray-300 mb-4 text-sm leading-relaxed">
-                    {service.description}
-                  </p>
-
-                  <ul className="space-y-2">
-                    {service.features.map((feature, featureIndex) => (
-                      <motion.li
-                        key={featureIndex}
-                        className="text-sm text-gray-500 dark:text-gray-400 flex items-center"
-                        initial={{ opacity: 0, x: -10 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: index * 0.1 + featureIndex * 0.05 }}
-                      >
-                        <span className="w-1.5 h-1.5 bg-yellow-construction rounded-full mr-2" />
-                        {feature}
-                      </motion.li>
-                    ))}
-                  </ul>
-
-                  <motion.div
-                    className="mt-6"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: hoveredIndex === index ? 1 : 0 }}
+                    className={`h-full bg-white dark:bg-black-solid rounded-2xl p-6 shadow-3d border-2 ${
+                      hoveredIndex === index
+                        ? 'border-yellow-construction'
+                        : 'border-transparent'
+                    } transition-all duration-300 cursor-pointer`}
+                    whileHover={{
+                      y: -10,
+                      rotateX: 5,
+                      rotateY: hoveredIndex === index ? 5 : 0,
+                      scale: 1.02
+                    }}
                     transition={{ duration: 0.3 }}
                   >
-                    <button
-                      onClick={() => window.location.href = '/services'}
-                      className="text-sky-primary font-semibold text-sm hover:text-sky-dark transition-colors flex items-center"
+                    <motion.div
+                      className="w-16 h-16 bg-gradient-to-br from-sky-primary to-sky-dark rounded-xl flex items-center justify-center mb-4"
+                      whileHover={{ rotate: 360, scale: 1.1 }}
+                      transition={{ duration: 0.6 }}
                     >
-                      En savoir plus
-                      <motion.span
-                        animate={{ x: hoveredIndex === index ? 5 : 0 }}
-                        transition={{ duration: 0.3 }}
+                      <Icon className="w-8 h-8 text-white" strokeWidth={2} />
+                    </motion.div>
+
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
+                      {service.title}
+                    </h3>
+
+                    <p className="text-gray-600 dark:text-gray-300 mb-4 text-sm leading-relaxed">
+                      {service.description}
+                    </p>
+
+                    {service.features && service.features.length > 0 && (
+                      <ul className="space-y-2">
+                        {service.features.map((feature, featureIndex) => (
+                          <motion.li
+                            key={featureIndex}
+                            className="text-sm text-gray-500 dark:text-gray-400 flex items-center"
+                            initial={{ opacity: 0, x: -10 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: index * 0.1 + featureIndex * 0.05 }}
+                          >
+                            <span className="w-1.5 h-1.5 bg-yellow-construction rounded-full mr-2" />
+                            {feature}
+                          </motion.li>
+                        ))}
+                      </ul>
+                    )}
+
+                    <motion.div
+                      className="mt-6"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: hoveredIndex === index ? 1 : 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <button
+                        onClick={() => window.location.href = '/services'}
+                        className="text-sky-primary font-semibold text-sm hover:text-sky-dark transition-colors flex items-center"
                       >
-                        →
-                      </motion.span>
-                    </button>
+                        En savoir plus
+                        <motion.span
+                          animate={{ x: hoveredIndex === index ? 5 : 0 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          →
+                        </motion.span>
+                      </button>
+                    </motion.div>
                   </motion.div>
                 </motion.div>
-              </motion.div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
 
         <motion.div
           className="text-center mt-12"

@@ -143,7 +143,7 @@ export default function ProjectsPage() {
               >
                 <div className="relative h-64 overflow-hidden">
                   <img
-                    src={`https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg?auto=compress&cs=tinysrgb&w=800`}
+                    src={project.thumbnail_url}
                     alt={project.title}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                   />

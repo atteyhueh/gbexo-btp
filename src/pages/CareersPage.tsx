@@ -176,12 +176,18 @@ export default function CareersPage() {
                           Critères requis:
                         </h4>
                         <ul className="space-y-2">
-                          {job.requirements.map((req, idx) => (
-                            <li key={idx} className="flex items-start text-gray-600 dark:text-gray-300 text-sm">
-                              <span className="w-1.5 h-1.5 bg-yellow-construction rounded-full mr-3 mt-1 flex-shrink-0" />
-                              {req}
+                          {Array.isArray(job.requirements) && job.requirements.length > 0 ? (
+                            job.requirements.map((req, idx) => (
+                              <li key={idx} className="flex items-start text-gray-600 dark:text-gray-300 text-sm">
+                                <span className="w-1.5 h-1.5 bg-yellow-construction rounded-full mr-3 mt-1 flex-shrink-0" />
+                                {req}
+                              </li>
+                            ))
+                          ) : (
+                            <li className="text-gray-600 dark:text-gray-300 text-sm">
+                              Aucun critère spécifique
                             </li>
-                          ))}
+                          )}
                         </ul>
                       </div>
                     </motion.div>

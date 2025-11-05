@@ -80,13 +80,24 @@ export default function Hero() {
   return (
     <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-sky-dark via-sky-primary to-sky-light dark:from-black-solid dark:via-gray-construction dark:to-sky-dark">
       {/* Bouton de notification en haut à droite */}
-      <div className="absolute top-20 right-6 z-20" ref={dropdownRef}>
+      <div className="fixed top-20 right-6 z-20" ref={dropdownRef}>
         <motion.button
           onClick={() => setIsOpen(!isOpen)}
           className="relative p-3 bg-white/10 backdrop-blur-md hover:bg-white/20 rounded-full transition-all duration-200 border border-white/30"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           aria-label="Notifications"
+
+          animate={{
+            rotate: count > 0 ? [0, -40, 40, -40, 40, -30, 30, 0] : 0,
+            scale: count > 0 ? [1, 1.1, 1, 1.1, 1] : 1,
+          }}
+          transition={{
+            duration: 3,
+            repeat: count > 0 ? Infinity : 0,
+            repeatDelay: 2,
+            ease: "easeInOut"
+          }}
         >
           <Bell className={`w-7 h-7 ${isOpen ? 'text-yellow-construction' : 'text-white'} transition-colors`} />
           

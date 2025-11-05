@@ -518,7 +518,7 @@ export default function ProjectsManager() {
                   <input
                     type="text"
                     name="technologies"
-                    value={formData.technologies?.join(', ')}
+                    value={Array.isArray(formData.technologies) ? formData.technologies.join(', ') : formData.technologies || ''}
                     onChange={handleChange}
                     className="w-full px-4 py-2 border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-white rounded-lg focus:border-yellow-500 focus:outline-none"
                     placeholder="Ex: Béton armé, Charpente métallique"
