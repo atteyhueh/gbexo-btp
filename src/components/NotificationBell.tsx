@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Bell, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 
 type Announcement = {
@@ -13,6 +14,7 @@ type Announcement = {
 };
 
 export default function NotificationBell() {
+  const navigate = useNavigate();
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [count, setCount] = useState(0);
@@ -59,13 +61,7 @@ export default function NotificationBell() {
   };
 
   const handleViewMore = (announcement: Announcement) => {
-    if (announcement.link_url) {
-      if (announcement.link_url.startsWith('http')) {
-        window.open(announcement.link_url, '_blank');
-      } else {
-        window.location.href = announcement.link_url;
-      }
-    }
+    navigate(`/announcements/${announcement.id}`);
     setIsOpen(false);
   };
 
