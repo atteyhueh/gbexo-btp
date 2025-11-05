@@ -11,6 +11,8 @@ import Home from './pages/Home';
 import ServicesPage from './pages/ServicesPage';
 import ProjectsPage from './pages/ProjectsPage';
 import ProjectDetail from './pages/ProjectDetail';
+import ServiceDetail from './pages/ServiceDetail';
+import AnnouncementDetail from './pages/AnnouncementDetail';
 import AboutPage from './pages/AboutPage';
 import CareersPage from './pages/CareersPage';
 import QuotePage from './pages/QuotePage';
@@ -73,8 +75,10 @@ function App() {
                       <Routes>
                         <Route path="/" element={<Home />} />
                         <Route path="/services" element={<ServicesPage />} />
+                        <Route path="/service/:id" element={<ServiceDetail />} />
                         <Route path="/projects" element={<ProjectsPage />} />
                         <Route path="/project/:id" element={<ProjectDetail />} />
+                        <Route path="/announcement/:id" element={<AnnouncementDetail />} />
                         <Route path="/about" element={<AboutPage />} />
                         <Route path="/careers" element={<CareersPage />} />
                         <Route path="/quote" element={<QuotePage />} />

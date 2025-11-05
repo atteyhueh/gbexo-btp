@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useProjectById } from '../hooks/useProjects';
-import { ChevronLeft, Share2, MapPin, Calendar, Users } from 'lucide-react';
+import { ChevronLeft, Share2, MapPin, Calendar, Users, Video as VideoIcon } from 'lucide-react';
 import { useState } from 'react';
 
 export default function ProjectDetail() {
@@ -61,16 +61,24 @@ export default function ProjectDetail() {
         <div className="grid md:grid-cols-3 gap-8">
           <div className="md:col-span-2">
             <motion.div
-              className="relative rounded-2xl overflow-hidden shadow-3d mb-6 h-96"
+              className="relative rounded-2xl overflow-hidden shadow-3d mb-6 h-96 bg-gray-900"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.6 }}
             >
-              <img
-                src={currentImage.image_url}
-                alt={project.title}
-                className="w-full h-full object-cover"
-              />
+              {(currentImage as any).media_type === 'video' ? (
+                <video
+                  src={currentImage.image_url}
+                  className="w-full h-full object-cover"
+                  controls
+                />
+              ) : (
+                <img
+                  src={currentImage.image_url}
+                  alt={project.title}
+                  className="w-full h-full object-cover"
+                />
+              )}
               {allImages.length > 1 && (
                 <div className="absolute bottom-4 right-4 bg-black-solid/70 text-white px-3 py-1 rounded-full text-sm font-semibold">
                   {currentImageIndex + 1} / {allImages.length}
@@ -84,7 +92,7 @@ export default function ProjectDetail() {
                   <motion.button
                     key={img.id || idx}
                     onClick={() => setCurrentImageIndex(idx)}
-                    className={`flex-shrink-0 w-24 h-24 rounded-lg overflow-hidden border-2 transition-all ${
+                    className={`flex-shrink-0 w-24 h-24 rounded-lg overflow-hidden border-2 relative transition-all ${
                       idx === currentImageIndex
                         ? 'border-yellow-construction shadow-lg'
                         : 'border-gray-300 dark:border-gray-600 hover:border-sky-primary'
@@ -92,11 +100,17 @@ export default function ProjectDetail() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    <img 
-                      src={img.image_url} 
-                      alt={`Image ${idx + 1}`} 
-                      className="w-full h-full object-cover" 
-                    />
+                    {(img as any).media_type === 'video' ? (
+                      <div className="w-full h-full bg-gray-800 flex items-center justify-center">
+                        <VideoIcon className="w-6 h-6 text-white" />
+                      </div>
+                    ) : (
+                      <img
+                        src={img.image_url}
+                        alt={`Image ${idx + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    )}
                   </motion.button>
                 ))}
               </div>
