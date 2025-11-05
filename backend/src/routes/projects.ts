@@ -127,4 +127,74 @@ router.delete('/:id', authMiddleware, async (req: AuthRequest, res: Response) =>
   }
 });
 
+// GET images pour un projet
+router.get('/:id/images', async (req: AuthRequest, res: Response) => {
+  let connection;
+  try {
+    const { id } = req.params;
+    connection = await pool.getConnection();
+    const [images]: any = await connection.execute(
+      'SELECT * FROM project_images WHERE project_id = ? ORDER BY order_index ASC',
+      [id]
+    );
+    res.json(images);
+  } catch (error) {
+    console.error('Error fetching project images:', error);
+    res.status(500).json({
+      error: 'Failed to fetch project images',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  } finally {
+    if (connection) connection.release();
+  }
+});
+
+// POST ajouter une image à un projet
+router.post('/:id/images', authMiddleware, async (req: AuthRequest, res: Response) => {
+  let connection;
+  try {
+    const { id } = req.params;
+    const { image_url, order_index } = req.body;
+    console.log('Adding image to project:', id);
+
+    connection = await pool.getConnection();
+    const [result]: any = await connection.execute(
+      'INSERT INTO project_images (project_id, image_url, order_index) VALUES (?, ?, ?)',
+      [id, image_url, order_index || 0]
+    );
+
+    res.status(201).json({ id: result.insertId });
+  } catch (error) {
+    console.error('Error adding image to project:', error);
+    res.status(500).json({
+      error: 'Failed to add image to project',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  } finally {
+    if (connection) connection.release();
+  }
+});
+
+// DELETE supprimer une image d'un projet
+router.delete('/:projectId/images/:imageId', authMiddleware, async (req: AuthRequest, res: Response) => {
+  let connection;
+  try {
+    const { imageId } = req.params;
+    console.log('Deleting project image:', imageId);
+
+    connection = await pool.getConnection();
+    await connection.execute('DELETE FROM project_images WHERE id = ?', [imageId]);
+
+    res.json({ message: 'Image deleted' });
+  } catch (error) {
+    console.error('Error deleting project image:', error);
+    res.status(500).json({
+      error: 'Failed to delete image',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  } finally {
+    if (connection) connection.release();
+  }
+});
+
 export default router;

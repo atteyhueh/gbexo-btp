@@ -67,6 +67,18 @@ export const api = {
       apiCall(`/projects/${id}`, {
         method: 'DELETE',
       }),
+    images: {
+      list: (id: string) => apiCall(`/projects/${id}/images`),
+      add: (id: string, data: any) =>
+        apiCall(`/projects/${id}/images`, {
+          method: 'POST',
+          body: JSON.stringify(data),
+        }),
+      delete: (projectId: string, imageId: string) =>
+        apiCall(`/projects/${projectId}/images/${imageId}`, {
+          method: 'DELETE',
+        }),
+    },
   },
 
   services: {
@@ -155,7 +167,6 @@ export const api = {
       }),
   },
 
-  // Nouvelles routes pour les annonces
   announcements: {
     list: () => apiCall('/announcements'),
     urgent: () => apiCall('/announcements/urgent'),
@@ -175,6 +186,18 @@ export const api = {
         method: 'DELETE',
       }),
     count: () => apiCall('/announcements/count'),
+    media: {
+      list: (id: string) => apiCall(`/announcements/${id}/media`),
+      add: (id: string, data: any) =>
+        apiCall(`/announcements/${id}/media`, {
+          method: 'POST',
+          body: JSON.stringify(data),
+        }),
+      delete: (announcementId: string, mediaId: string) =>
+        apiCall(`/announcements/${announcementId}/media/${mediaId}`, {
+          method: 'DELETE',
+        }),
+    },
   },
 
   contact: {

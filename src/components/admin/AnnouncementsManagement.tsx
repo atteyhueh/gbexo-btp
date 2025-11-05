@@ -1,6 +1,16 @@
 import { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, AlertCircle, Image as ImageIcon, X } from 'lucide-react';
 import { api } from '../../lib/api';
+import AnnouncementMediaManager from './AnnouncementMediaManager';
+
+type MediaItem = {
+  id: number;
+  announcement_id: number;
+  media_url: string;
+  media_type: 'image' | 'video';
+  is_featured: boolean;
+  order_index: number;
+};
 
 type Announcement = {
   id?: number;
@@ -18,6 +28,7 @@ export default function AnnouncementsManagement() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
   const [loading, setLoading] = useState(false);
+  const [media, setMedia] = useState<MediaItem[]>([]);
   const [formData, setFormData] = useState<Announcement>({
     title: '',
     content: '',
@@ -83,10 +94,22 @@ export default function AnnouncementsManagement() {
     }
   };
 
+  const fetchMediaForAnnouncement = async (announcementId: number) => {
+    try {
+      const mediaData = await api.announcements.media.list(announcementId.toString());
+      setMedia(mediaData || []);
+    } catch (error) {
+      console.error('Error fetching media:', error);
+    }
+  };
+
   const openModal = (announcement?: Announcement) => {
     if (announcement) {
       setEditingAnnouncement(announcement);
       setFormData(announcement);
+      if (announcement.id) {
+        fetchMediaForAnnouncement(announcement.id);
+      }
     } else {
       setEditingAnnouncement(null);
       setFormData({
@@ -97,6 +120,7 @@ export default function AnnouncementsManagement() {
         is_active: true,
         link_url: ''
       });
+      setMedia([]);
     }
     setIsModalOpen(true);
   };
@@ -104,6 +128,7 @@ export default function AnnouncementsManagement() {
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingAnnouncement(null);
+    setMedia([]);
   };
 
   const formatDate = (dateString?: string) => {
@@ -341,6 +366,17 @@ export default function AnnouncementsManagement() {
                     </span>
                   </label>
                 </div>
+
+                {editingAnnouncement && editingAnnouncement.id && (
+                  <div className="border-t border-gray-300 dark:border-gray-600 pt-4 mt-4">
+                    <AnnouncementMediaManager
+                      announcementId={editingAnnouncement.id}
+                      media={media}
+                      onMediaAdded={() => fetchMediaForAnnouncement(editingAnnouncement.id!)}
+                      isLoading={loading}
+                    />
+                  </div>
+                )}
 
                 <div className="flex gap-3 pt-4">
                   <button

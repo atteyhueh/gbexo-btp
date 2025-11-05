@@ -3,6 +3,14 @@ import { useState, useEffect } from 'react';
 import { api } from '../../lib/api';
 import { Plus, Edit, Trash2, X, Eye } from 'lucide-react';
 import { ImageUpload } from './ImageUpload';
+import ProjectMediaManager from './ProjectMediaManager';
+
+type ImageItem = {
+  id: number;
+  project_id: string;
+  image_url: string;
+  order_index: number;
+};
 
 type Project = {
   id?: string;
@@ -30,6 +38,7 @@ export default function ProjectsManager() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [projectImages, setProjectImages] = useState<ImageItem[]>([]);
   const [formData, setFormData] = useState<Partial<Project>>({
     title: '',
     description: '',
@@ -107,9 +116,21 @@ export default function ProjectsManager() {
     }
   };
 
+  const fetchImagesForProject = async (projectId: string) => {
+    try {
+      const imagesData = await api.projects.images.list(projectId);
+      setProjectImages(imagesData || []);
+    } catch (error) {
+      console.error('Error fetching images:', error);
+    }
+  };
+
   const handleEdit = (project: Project) => {
     setEditingProject(project);
     setFormData(project);
+    if (project.id) {
+      fetchImagesForProject(project.id);
+    }
     setShowModal(true);
   };
 
@@ -132,6 +153,7 @@ export default function ProjectsManager() {
       order_index: 0,
       image_url: '',
     });
+    setProjectImages([]);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -547,6 +569,17 @@ export default function ProjectsManager() {
                     </span>
                   </label>
                 </div>
+
+                {editingProject && editingProject.id && (
+                  <div className="md:col-span-2 border-t border-gray-300 dark:border-gray-600 pt-4 mt-4">
+                    <ProjectMediaManager
+                      projectId={editingProject.id}
+                      images={projectImages}
+                      onImagesUpdated={() => fetchImagesForProject(editingProject.id!)}
+                      isLoading={loading}
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4">

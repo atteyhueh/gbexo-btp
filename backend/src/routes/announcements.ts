@@ -164,4 +164,74 @@ router.delete('/announcements/:id', authMiddleware, async (req: AuthRequest, res
   }
 });
 
+// GET médias pour une annonce
+router.get('/announcements/:id/media', async (req: AuthRequest, res: Response) => {
+  let connection;
+  try {
+    const { id } = req.params;
+    connection = await pool.getConnection();
+    const [media]: any = await connection.execute(
+      'SELECT * FROM announcement_media WHERE announcement_id = ? ORDER BY order_index ASC',
+      [id]
+    );
+    res.json(media);
+  } catch (error) {
+    console.error('Error fetching announcement media:', error);
+    res.status(500).json({
+      error: 'Failed to fetch announcement media',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  } finally {
+    if (connection) connection.release();
+  }
+});
+
+// POST ajouter un média à une annonce
+router.post('/announcements/:id/media', authMiddleware, async (req: AuthRequest, res: Response) => {
+  let connection;
+  try {
+    const { id } = req.params;
+    const { media_url, media_type, is_featured, order_index } = req.body;
+    console.log('Adding media to announcement:', id);
+
+    connection = await pool.getConnection();
+    const [result]: any = await connection.execute(
+      'INSERT INTO announcement_media (announcement_id, media_url, media_type, is_featured, order_index) VALUES (?, ?, ?, ?, ?)',
+      [id, media_url, media_type, is_featured || false, order_index || 0]
+    );
+
+    res.status(201).json({ id: result.insertId });
+  } catch (error) {
+    console.error('Error adding media to announcement:', error);
+    res.status(500).json({
+      error: 'Failed to add media to announcement',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  } finally {
+    if (connection) connection.release();
+  }
+});
+
+// DELETE supprimer un média d'une annonce
+router.delete('/announcements/:announcementId/media/:mediaId', authMiddleware, async (req: AuthRequest, res: Response) => {
+  let connection;
+  try {
+    const { mediaId } = req.params;
+    console.log('Deleting announcement media:', mediaId);
+
+    connection = await pool.getConnection();
+    await connection.execute('DELETE FROM announcement_media WHERE id = ?', [mediaId]);
+
+    res.json({ message: 'Media deleted' });
+  } catch (error) {
+    console.error('Error deleting announcement media:', error);
+    res.status(500).json({
+      error: 'Failed to delete media',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  } finally {
+    if (connection) connection.release();
+  }
+});
+
 export default router;
