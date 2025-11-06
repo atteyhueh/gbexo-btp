@@ -197,4 +197,67 @@ router.delete('/:projectId/images/:imageId', authMiddleware, async (req: AuthReq
   }
 });
 
+router.get('/:id/media', async (req: AuthRequest, res: Response) => {
+  let connection;
+  try {
+    const { id } = req.params;
+    connection = await pool.getConnection();
+
+    const [media]: any = await connection.execute(
+      'SELECT * FROM projects_media WHERE project_id = ? ORDER BY order_index ASC',
+      [id]
+    );
+
+    res.json(media || []);
+  } catch (error) {
+    console.error('Error fetching project media:', error);
+    res.status(500).json({ error: 'Failed to fetch media' });
+  } finally {
+    if (connection) connection.release();
+  }
+});
+
+router.post('/:id/media', authMiddleware, async (req: AuthRequest, res: Response) => {
+  let connection;
+  try {
+    const { id } = req.params;
+    const { media_url, media_type, is_featured, order_index } = req.body;
+
+    connection = await pool.getConnection();
+
+    const [result]: any = await connection.execute(
+      'INSERT INTO projects_media (project_id, media_url, media_type, is_featured, order_index) VALUES (?, ?, ?, ?, ?)',
+      [id, media_url, media_type, is_featured || false, order_index || 0]
+    );
+
+    res.status(201).json({ id: result.insertId, project_id: id, media_url, media_type, is_featured, order_index });
+  } catch (error) {
+    console.error('Error adding project media:', error);
+    res.status(500).json({ error: 'Failed to add media' });
+  } finally {
+    if (connection) connection.release();
+  }
+});
+
+router.delete('/:projectId/media/:mediaId', authMiddleware, async (req: AuthRequest, res: Response) => {
+  let connection;
+  try {
+    const { projectId, mediaId } = req.params;
+
+    connection = await pool.getConnection();
+
+    await connection.execute(
+      'DELETE FROM projects_media WHERE id = ? AND project_id = ?',
+      [mediaId, projectId]
+    );
+
+    res.json({ message: 'Media deleted' });
+  } catch (error) {
+    console.error('Error deleting project media:', error);
+    res.status(500).json({ error: 'Failed to delete media' });
+  } finally {
+    if (connection) connection.release();
+  }
+});
+
 export default router;

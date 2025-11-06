@@ -79,6 +79,18 @@ export const api = {
           method: 'DELETE',
         }),
     },
+    media: {
+      list: (id: string) => apiCall(`/projects/${id}/media`),
+      add: (id: string, data: any) =>
+        apiCall(`/projects/${id}/media`, {
+          method: 'POST',
+          body: JSON.stringify(data),
+        }),
+      delete: (projectId: string, mediaId: string) =>
+        apiCall(`/projects/${projectId}/media/${mediaId}`, {
+          method: 'DELETE',
+        }),
+    },
   },
 
   services: {

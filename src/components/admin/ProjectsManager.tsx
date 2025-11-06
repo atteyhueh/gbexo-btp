@@ -39,6 +39,7 @@ export default function ProjectsManager() {
   const [showModal, setShowModal] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [projectImages, setProjectImages] = useState<ImageItem[]>([]);
+  const [projectMedia, setProjectMedia] = useState<any[]>([]);
   const [formData, setFormData] = useState<Partial<Project>>({
     title: '',
     description: '',
@@ -125,11 +126,21 @@ export default function ProjectsManager() {
     }
   };
 
+  const fetchMediaForProject = async (projectId: string) => {
+    try {
+      const mediaData = await api.projects.media.list(projectId);
+      setProjectMedia(mediaData || []);
+    } catch (error) {
+      console.error('Error fetching media:', error);
+    }
+  };
+
   const handleEdit = (project: Project) => {
     setEditingProject(project);
     setFormData(project);
     if (project.id) {
       fetchImagesForProject(project.id);
+      fetchMediaForProject(project.id);
     }
     setShowModal(true);
   };
@@ -574,8 +585,8 @@ export default function ProjectsManager() {
                   <div className="md:col-span-2 border-t border-gray-300 dark:border-gray-600 pt-4 mt-4">
                     <ProjectMediaManager
                       projectId={editingProject.id}
-                      images={projectImages}
-                      onImagesUpdated={() => fetchImagesForProject(editingProject.id!)}
+                      media={projectMedia}
+                      onMediaAdded={() => fetchMediaForProject(editingProject.id!)}
                       isLoading={loading}
                     />
                   </div>
