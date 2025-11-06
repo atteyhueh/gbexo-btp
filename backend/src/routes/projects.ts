@@ -30,6 +30,7 @@ router.get('/', async (req: AuthRequest, res: Response) => {
   }
 });
 
+// ✅ ROUTE CORRIGÉE - Récupère images ET media
 router.get('/:id', async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
@@ -45,8 +46,15 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ error: 'Project not found' });
     }
 
+    // Récupérer les anciennes images (project_images)
     const [images]: any = await connection.execute(
       'SELECT * FROM project_images WHERE project_id = ? ORDER BY order_index ASC',
+      [id]
+    );
+
+    // ✅ NOUVEAU : Récupérer aussi les médias (projects_media)
+    const [media]: any = await connection.execute(
+      'SELECT * FROM projects_media WHERE project_id = ? ORDER BY order_index ASC',
       [id]
     );
 
@@ -55,7 +63,12 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
     // Parse technologies before sending
     const parsedProject = parseProject(project[0]);
     
-    res.json({ ...parsedProject, images });
+    // ✅ Retourner à la fois images ET media
+    res.json({ 
+      ...parsedProject, 
+      images: images || [],
+      media: media || []
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to fetch project' });
@@ -116,6 +129,7 @@ router.delete('/:id', authMiddleware, async (req: AuthRequest, res: Response) =>
     connection = await pool.getConnection();
 
     await connection.execute('DELETE FROM project_images WHERE project_id = ?', [id]);
+    await connection.execute('DELETE FROM projects_media WHERE project_id = ?', [id]);
     await connection.execute('DELETE FROM projects WHERE id = ?', [id]);
 
     res.json({ message: 'Project deleted' });

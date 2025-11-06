@@ -119,3 +119,13 @@ AND NOT EXISTS (
 );
 
 SELECT 'Multi-media system migration completed successfully!' AS status;
+
+CREATE TABLE projects_media (
+id INT PRIMARY KEY AUTO_INCREMENT,
+project_id INT NOT NULL,
+media_url VARCHAR(500) NOT NULL,
+media_type ENUM('image','video') NOT NULL,
+is_featured BOOLEAN DEFAULT false,
+order_index INT DEFAULT 0,
+FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+);

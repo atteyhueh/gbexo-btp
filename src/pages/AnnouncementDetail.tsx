@@ -44,7 +44,7 @@ export default function AnnouncementDetail() {
         setIsLoading(true);
         setError(null);
         
-        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+        const API_URL = import.meta.env.VITE_API_URL || 'https://backend-gbtp.tiic-system.com/api';
         console.log('📡 API URL:', API_URL);
         
         const announcementUrl = `${API_URL}/announcements/${id}`;
