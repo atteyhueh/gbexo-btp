@@ -22,12 +22,31 @@ export default function Hero() {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [count, setCount] = useState(0);
+  const [showVideo, setShowVideo] = useState(false);
+  const [videoEnded, setVideoEnded] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  // URL de votre vidéo - REMPLACEZ PAR VOTRE URL
+  const VIDEO_URL = "https://res.cloudinary.com/dcfk7tioq/video/upload/v1762508744/GBEX_hdkhdu.mp4";
 
   useEffect(() => {
     fetchAnnouncements();
     const interval = setInterval(fetchAnnouncements, 300000);
     return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    // Afficher la vidéo après 6 secondes
+    const timer = setTimeout(() => {
+      setShowVideo(true);
+      // Lancer la lecture de la vidéo
+      if (videoRef.current) {
+        videoRef.current.play().catch(err => console.log('Erreur lecture vidéo:', err));
+      }
+    }, 6000);
+
+    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
@@ -73,8 +92,72 @@ export default function Hero() {
     document.querySelector('#services')?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const handleVideoEnd = () => {
+    setVideoEnded(true);
+  };
+
+  const handleSkipVideo = () => {
+    setVideoEnded(true);
+    if (videoRef.current) {
+      videoRef.current.pause();
+    }
+  };
+
   return (
     <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-sky-dark via-sky-primary to-sky-light dark:from-black-solid dark:via-gray-construction dark:to-sky-dark">
+      {/* Vidéo de présentation - Préchargée et cachée */}
+      <video
+        ref={videoRef}
+        preload="auto"
+        playsInline
+        muted
+        onEnded={handleVideoEnd}
+        className="hidden"
+      >
+        <source src={VIDEO_URL} type="video/mp4" />
+      </video>
+
+      {/* Overlay vidéo plein écran */}
+      <AnimatePresence>
+        {showVideo && !videoEnded && (
+          <motion.div
+            initial={{ opacity: 0, scale: 1.05 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            transition={{ duration: 0.6, ease: 'easeInOut' }}
+            className="absolute inset-0 z-30 bg-black"
+          >
+            {/* Vidéo en plein écran */}
+            <video
+              autoPlay
+              playsInline
+              muted
+              onEnded={handleVideoEnd}
+              className="w-full h-full object-cover"
+            >
+              <source src={VIDEO_URL} type="video/mp4" />
+            </video>
+
+            {/* Overlay gradient subtil pour meilleure lisibilité du bouton */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" />
+
+            {/* Bouton pour passer la vidéo */}
+            <motion.button
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 2, duration: 0.5 }}
+              onClick={handleSkipVideo}
+              className="absolute bottom-8 right-8 bg-white/20 backdrop-blur-md hover:bg-white/30 text-white px-6 py-3 rounded-full font-semibold transition-all border border-white/30 flex items-center gap-2 shadow-lg"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Passer la vidéo
+              <ChevronDown className="w-5 h-5 rotate-[-90deg]" />
+            </motion.button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Bouton de notification en haut à droite */}
       <div className="fixed top-20 right-6 z-20" ref={dropdownRef}>
         <motion.button
@@ -83,7 +166,6 @@ export default function Hero() {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           aria-label="Notifications"
-
           animate={{
             rotate: count > 0 ? [0, -40, 40, -40, 40, -30, 30, 0] : 0,
             scale: count > 0 ? [1, 1.1, 1, 1.1, 1] : 1,
@@ -178,6 +260,7 @@ export default function Hero() {
         </AnimatePresence>
       </div>
 
+      {/* Arrière-plan animé */}
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
           className="absolute top-20 left-10 opacity-10"
@@ -225,6 +308,7 @@ export default function Hero() {
         </motion.div>
       </div>
 
+      {/* Contenu Hero principal */}
       <motion.div
         style={{ y, opacity }}
         className="relative z-10 text-center px-4 max-w-5xl mx-auto"
@@ -324,6 +408,7 @@ export default function Hero() {
         </motion.div>
       </motion.div>
 
+      {/* Flèche scroll */}
       <motion.div
         className="absolute bottom-8 left-1/2 -translate-x-1/2 cursor-pointer"
         animate={{
