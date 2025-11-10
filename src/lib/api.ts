@@ -173,6 +173,11 @@ export const api = {
         method: 'POST',
         body: JSON.stringify(data),
       }),
+    updateStatus: (id: string, status: string) =>
+      apiCall(`/quotes/${id}/status`, {
+        method: 'PUT',
+        body: JSON.stringify({ status }),
+      }),
     delete: (id: string) =>
       apiCall(`/quotes/${id}`, {
         method: 'DELETE',

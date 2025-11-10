@@ -10,7 +10,7 @@ interface NavigationProps {
   toggleDarkMode: () => void;
 }
 
-export default function Navigation({ darkMode, toggleDarkMode }: NavigationProps) {
+export default function Navigation({ darkMode=true, toggleDarkMode }: NavigationProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const { scrollY } = useScroll();

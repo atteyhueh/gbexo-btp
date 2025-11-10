@@ -4,6 +4,7 @@ import { api } from '../lib/api';
 import { Building2, Construction, Wrench, FileText } from 'lucide-react';
 
 export default function QuotePage() {
+  const [clientType, setClientType] = useState<'particulier' | 'entreprise'>('particulier');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -34,7 +35,12 @@ export default function QuotePage() {
     setIsSubmitting(true);
 
     try {
-      await api.quotes.create(formData);
+      // Si c'est un particulier, on envoie "Particulier" comme company
+      const dataToSubmit = {
+        ...formData,
+        company: clientType === 'particulier' ? 'Particulier' : formData.company,
+      };
+      await api.quotes.create(dataToSubmit);
       setSubmitStatus('success');
       setFormData({
         name: '',
@@ -43,6 +49,7 @@ export default function QuotePage() {
         project_type: '',
         description: '',
       });
+      setClientType('particulier');
 
       setTimeout(() => {
         setSubmitStatus('idle');
@@ -81,6 +88,37 @@ export default function QuotePage() {
           transition={{ delay: 0.2, duration: 0.6 }}
         >
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Sélecteur Type de client */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                Type de client *
+              </label>
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  type="button"
+                  onClick={() => setClientType('particulier')}
+                  className={`px-6 py-4 rounded-lg border-2 font-semibold transition-all ${
+                    clientType === 'particulier'
+                      ? 'border-sky-primary bg-sky-primary/10 text-sky-primary dark:text-sky-400'
+                      : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600'
+                  }`}
+                >
+                  Particulier
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setClientType('entreprise')}
+                  className={`px-6 py-4 rounded-lg border-2 font-semibold transition-all ${
+                    clientType === 'entreprise'
+                      ? 'border-sky-primary bg-sky-primary/10 text-sky-primary dark:text-sky-400'
+                      : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600'
+                  }`}
+                >
+                  Entreprise
+                </button>
+              </div>
+            </div>
+
             <div className="grid md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -113,19 +151,23 @@ export default function QuotePage() {
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Entreprise
-              </label>
-              <input
-                type="text"
-                name="company"
-                value={formData.company}
-                onChange={handleChange}
-                className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-black-solid text-gray-900 dark:text-white focus:border-sky-primary focus:outline-none transition-colors"
-                placeholder="Nom de votre entreprise"
-              />
-            </div>
+            {/* Champ Entreprise - affiché uniquement pour les entreprises */}
+            {clientType === 'entreprise' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Entreprise *
+                </label>
+                <input
+                  type="text"
+                  name="company"
+                  value={formData.company}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-black-solid text-gray-900 dark:text-white focus:border-sky-primary focus:outline-none transition-colors"
+                  placeholder="Nom de votre entreprise"
+                />
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">

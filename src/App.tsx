@@ -21,13 +21,20 @@ import Dashboard from './pages/admin/Dashboard';
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(true);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
+    if (savedTheme === 'light') {
+      setDarkMode(false);
+      document.documentElement.classList.remove('dark');
+    } else {
+      // Par défaut, activer le mode sombre
       setDarkMode(true);
       document.documentElement.classList.add('dark');
+      if (!savedTheme) {
+        localStorage.setItem('theme', 'dark');
+      }
     }
   }, []);
 
@@ -77,7 +84,6 @@ function App() {
                         <Route path="/service/:id" element={<ServiceDetail />} />
                         <Route path="/projects" element={<ProjectsPage />} />
                         <Route path="/project/:id" element={<ProjectDetail />} />
-                        {/* ✅ Changé /announcement/:id en /announcements/:id */}
                         <Route path="/announcements/:id" element={<AnnouncementDetail />} />
                         <Route path="/about" element={<AboutPage />} />
                         <Route path="/careers" element={<CareersPage />} />

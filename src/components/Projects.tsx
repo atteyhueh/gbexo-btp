@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
-import { X, Loader2, ArrowRight } from 'lucide-react';
+import { Loader2, ArrowRight } from 'lucide-react';
 import { api } from '../lib/api';
 import { useNavigate } from 'react-router-dom';
 
@@ -26,7 +26,6 @@ interface ProjectsProps {
 export default function Projects({ limit, showViewMore = false, showFilters = true }: ProjectsProps) {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState('Tous');
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -136,7 +135,7 @@ export default function Projects({ limit, showViewMore = false, showFilters = tr
                     viewport={{ once: true }}
                     transition={{ delay: index * 0.1, duration: 0.5 }}
                     whileHover={{ y: -10, scale: 1.02 }}
-                    onClick={() => setSelectedProject(project)}
+                    onClick={() => navigate(`/project/${project.id}`)}
                   >
                     <div className="relative h-64 overflow-hidden">
                       <motion.img
@@ -195,92 +194,6 @@ export default function Projects({ limit, showViewMore = false, showFilters = tr
           </>
         )}
       </div>
-
-      {selectedProject && (
-        <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black-solid/90 backdrop-blur-sm p-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={() => setSelectedProject(null)}
-        >
-          <motion.div
-            className="bg-white dark:bg-gray-construction rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-3d-hover"
-            initial={{ scale: 0.9, y: 50 }}
-            animate={{ scale: 1, y: 0 }}
-            exit={{ scale: 0.9, y: 50 }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="relative h-96">
-              <img
-                src={selectedProject.thumbnail_url}
-                alt={selectedProject.title}
-                className="w-full h-full object-cover"
-              />
-              <button
-                onClick={() => setSelectedProject(null)}
-                className="absolute top-4 right-4 bg-black-solid/50 hover:bg-black-solid/70 text-white p-2 rounded-full transition-colors"
-              >
-                <X className="w-6 h-6" />
-              </button>
-              <div className="absolute top-4 left-4">
-                <span className="bg-yellow-construction text-black-solid px-4 py-2 rounded-full text-sm font-bold">
-                  {selectedProject.category}
-                </span>
-              </div>
-            </div>
-
-            <div className="p-8">
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                {selectedProject.title}
-              </h2>
-
-              <div className="flex flex-wrap items-center gap-6 mb-6 text-gray-600 dark:text-gray-300">
-                <div>
-                  <span className="font-semibold">Lieu:</span> {selectedProject.location}
-                </div>
-                <div>
-                  <span className="font-semibold">Année:</span> {getYear(selectedProject.created_at)}
-                </div>
-                <div>
-                  <span className="font-semibold">Type:</span> {selectedProject.project_type}
-                </div>
-                <div>
-                  <span className="font-semibold">Client:</span> {selectedProject.client_name}
-                </div>
-              </div>
-
-              <p className="text-gray-700 dark:text-gray-300 text-lg leading-relaxed mb-6">
-                {selectedProject.description}
-              </p>
-
-              <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-                <h3 className="font-bold text-lg mb-3 text-gray-900 dark:text-white">Détails du projet</h3>
-                <ul className="space-y-2 text-gray-600 dark:text-gray-300">
-                  <li className="flex items-center">
-                    <span className="w-2 h-2 bg-yellow-construction rounded-full mr-3" />
-                    Respect des délais et du budget
-                  </li>
-                  <li className="flex items-center">
-                    <span className="w-2 h-2 bg-yellow-construction rounded-full mr-3" />
-                    Normes de qualité et sécurité respectées
-                  </li>
-                  <li className="flex items-center">
-                    <span className="w-2 h-2 bg-yellow-construction rounded-full mr-3" />
-                    Équipe d'experts qualifiés
-                  </li>
-                  {selectedProject.featured === 1 && (
-                    <li className="flex items-center">
-                      <span className="w-2 h-2 bg-yellow-construction rounded-full mr-3" />
-                      Projet mis en avant
-                    </li>
-                  )}
-                </ul>
-              </div>
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
     </section>
   );
 }
