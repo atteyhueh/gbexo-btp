@@ -61,7 +61,7 @@ export default function UrgentAnnouncementBanner() {
 
   return (
     <>
-      {/* Bouton pour rouvrir la bande quand elle est fermée */}
+      {/* Bouton pour rouvrir - Adapté mobile */}
       <AnimatePresence>
         {!isVisible && (
           <motion.button
@@ -69,26 +69,26 @@ export default function UrgentAnnouncementBanner() {
             animate={{ scale: 1 }}
             exit={{ scale: 0 }}
             onClick={() => setIsVisible(true)}
-            className="fixed bottom-4 right-4 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black p-4 rounded-full shadow-2xl hover:shadow-yellow-500/50 transition-all duration-300 z-[9998] group"
+            className="fixed bottom-20 right-3 sm:bottom-24 sm:right-4 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black p-3 sm:p-4 rounded-full shadow-2xl hover:shadow-yellow-500/50 transition-all duration-300 z-[9998] group"
             aria-label="Afficher les annonces importantes"
           >
             <div className="relative">
-              <AlertCircle className="w-6 h-6" />
-              <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse" />
+              <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6" />
+              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-red-500 rounded-full animate-pulse" />
             </div>
-            <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-black text-yellow-400 px-3 py-1 rounded-lg text-sm font-semibold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+            <span className="hidden sm:block absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-black text-yellow-400 px-3 py-1 rounded-lg text-sm font-semibold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
               Annonces importantes
             </span>
           </motion.button>
         )}
       </AnimatePresence>
 
-      {/* Bande d'annonce */}
+      {/* Bande d'annonce - Responsive */}
       <AnimatePresence>
         {isVisible && (
           <motion.div
-            className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-400 text-black overflow-hidden shadow-2xl border-t-4 border-black"
-            style={{ height: '60px', zIndex: 9999 }}
+            className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-400 text-black overflow-hidden shadow-2xl border-t-2 sm:border-t-4 border-black"
+            style={{ height: '48px', zIndex: 9999 }}
             initial={{ y: 100 }}
             animate={{ y: 0 }}
             exit={{ y: 100 }}
@@ -96,10 +96,10 @@ export default function UrgentAnnouncementBanner() {
           >
             <button
               onClick={() => setIsVisible(false)}
-              className="absolute top-2 right-2 bg-black/20 hover:bg-black/40 rounded-full p-1.5 transition-all duration-300 z-10 hover:scale-110"
+              className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 bg-black/20 hover:bg-black/40 rounded-full p-1 sm:p-1.5 transition-all duration-300 z-10 hover:scale-110"
               aria-label="Fermer"
             >
-              <X className="w-5 h-5 text-black" />
+              <X className="w-4 h-4 sm:w-5 sm:h-5 text-black" />
             </button>
 
             <div className="h-full flex items-center">
@@ -121,14 +121,14 @@ export default function UrgentAnnouncementBanner() {
                   <div
                     key={`${announcement.id}-${index}`}
                     onClick={() => handleAnnouncementClick(announcement)}
-                    className={`inline-flex items-center px-8 py-2 ${
+                    className={`inline-flex items-center px-4 sm:px-8 py-1.5 sm:py-2 ${
                       announcement.link_url ? 'cursor-pointer hover:bg-black/10' : ''
                     } transition-all duration-300`}
                   >
-                    <AlertCircle className="w-5 h-5 mr-2 flex-shrink-0" />
-                    <span className="font-bold mr-2 text-lg">{announcement.title}:</span>
-                    <span className="text-base">{announcement.message}</span>
-                    <span className="mx-8 text-red-600 text-2xl animate-pulse">●</span>
+                    <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 flex-shrink-0" />
+                    <span className="font-bold mr-1.5 sm:mr-2 text-sm sm:text-lg">{announcement.title}:</span>
+                    <span className="text-xs sm:text-base">{announcement.message}</span>
+                    <span className="mx-4 sm:mx-8 text-red-600 text-lg sm:text-2xl animate-pulse">●</span>
                   </div>
                 ))}
               </motion.div>

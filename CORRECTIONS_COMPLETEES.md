@@ -40,7 +40,7 @@ Toutes les corrections demandées ont été implémentées avec succès.
 ✅ Jobs (déjà fonctionnel)
 ✅ Équipe (nouvellement ajouté)
 ✅ Témoignages (nouvellement ajouté)
-✅ Demandes de devis (nouvellement ajouté)
+✅ Demandes d' Une facture pro forma (nouvellement ajouté)
 
 ## 4. Formulaires Publics Fonctionnels
 

@@ -110,7 +110,7 @@ export default function Navigation({ darkMode=true, toggleDarkMode }: Navigation
                   whileHover={{ scale: 1.05, y: -2 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  Devis Gratuit
+                   Facture pro forma Gratuit
                 </motion.button>
               </Link>
             </div>
@@ -163,7 +163,7 @@ export default function Navigation({ darkMode=true, toggleDarkMode }: Navigation
                   className="w-full bg-gradient-to-r from-yellow-construction to-yellow-dark text-black-solid px-6 py-3 rounded-full font-semibold shadow-3d"
                   whileTap={{ scale: 0.95 }}
                 >
-                  Devis Gratuit
+                  Facture pro forma Gratuit
                 </motion.button>
               </Link>
             </div>

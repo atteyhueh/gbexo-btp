@@ -92,7 +92,7 @@ export default function QuotesManager() {
     <div className="px-4 sm:px-6 lg:px-8">
       <div className="mb-6">
         <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-4">
-          Demandes de Devis
+          Demandes de facture pro forma
         </h2>
 
         {/* Statistiques */}
@@ -292,7 +292,7 @@ export default function QuotesManager() {
         {filteredQuotes.length === 0 && (
           <div className="text-center py-12 text-gray-500 dark:text-gray-400">
             {filter === 'all' 
-              ? 'Aucune demande de devis pour le moment'
+              ? 'Aucune demande de facture pro forma pour le moment'
               : `Aucune demande ${statusLabels[filter].label.toLowerCase()}`
             }
           </div>

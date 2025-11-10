@@ -84,7 +84,7 @@ export default function Contact() {
             Contactez-<span className="text-sky-primary">nous</span>
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            Prêt à démarrer votre projet? Contactez-nous pour un devis gratuit et personnalisé
+            Prêt à démarrer votre projet? Contactez-nous pour une facture pro forma gratuit et personnalisé
           </p>
         </motion.div>
 

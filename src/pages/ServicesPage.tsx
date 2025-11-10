@@ -108,7 +108,7 @@ export default function ServicesPage() {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                     >
-                      Demander un devis
+                      Demander une facture pro forma
                     </motion.button>
                   </div>
                 </motion.div>

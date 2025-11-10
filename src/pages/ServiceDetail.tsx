@@ -228,7 +228,7 @@ export default function ServiceDetail() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                Demander un Devis
+                Demander une facture pro forma
               </motion.button>
               <motion.button
                 onClick={() => navigate('/quote')}
@@ -236,7 +236,7 @@ export default function ServiceDetail() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                Page Devis
+                Page de facture pro forma
               </motion.button>
             </div>
 

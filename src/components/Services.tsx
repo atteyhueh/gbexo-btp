@@ -241,7 +241,7 @@ export default function Services({ limit, showViewMore = false }: ServicesProps)
             whileTap={{ scale: 0.95 }}
             onClick={() => document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth' })}
           >
-            Demander un Devis Personnalisé
+            Demander une facture pro forma Personnalisé
           </motion.button>
         </motion.div>
       </div>

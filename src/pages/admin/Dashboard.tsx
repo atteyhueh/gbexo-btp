@@ -43,7 +43,7 @@ export default function Dashboard() {
     { id: 'services', label: 'Services', icon: FileText },
     { id: 'team', label: 'Équipe', icon: Users },
     { id: 'testimonials', label: 'Témoignages', icon: MessageSquare },
-    { id: 'quotes', label: 'Demandes de devis', icon: Mail },
+    { id: 'quotes', label: 'Demandes de facture pro forma', icon: Mail },
     { id: 'jobs', label: 'Offres d\'emploi', icon: UserCircle },
     { id: 'announcements', label: 'Annonces', icon: Megaphone },
   ];

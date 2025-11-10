@@ -74,7 +74,7 @@ export default function QuotePage() {
           transition={{ duration: 0.8 }}
         >
           <h1 className="text-5xl md:text-6xl font-extrabold text-white mb-4">
-            Demander un <span className="text-yellow-construction">Devis</span>
+            Demander un <span className="text-yellow-construction">Pro forma</span>
           </h1>
           <p className="text-xl text-white/80 max-w-2xl mx-auto">
             Recevez une estimation gratuite pour votre projet de construction

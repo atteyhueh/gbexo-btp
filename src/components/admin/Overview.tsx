@@ -46,7 +46,7 @@ export default function Overview() {
     { title: 'Services', value: stats.services, icon: FileText, color: 'from-green-500 to-green-600' },
     { title: 'Équipe', value: stats.team, icon: Users, color: 'from-purple-500 to-purple-600' },
     { title: 'Témoignages', value: stats.testimonials, icon: MessageSquare, color: 'from-yellow-500 to-yellow-600' },
-    { title: 'Demandes de devis', value: stats.quotes, icon: Mail, color: 'from-red-500 to-red-600' },
+    { title: 'Demandes de facture pro forma', value: stats.quotes, icon: Mail, color: 'from-red-500 to-red-600' },
     { title: 'Offres d\'emploi', value: stats.jobs, icon: UserCircle, color: 'from-indigo-500 to-indigo-600' },
   ];
 

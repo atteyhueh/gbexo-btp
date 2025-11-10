@@ -31,7 +31,7 @@ export class EmailService {
       await transporter.sendMail({
         from: `"${COMPANY_NAME}" <${COMPANY_EMAIL}>`,
         to: data.email,
-        subject: `✅ Confirmation - Votre demande de devis a été reçue`,
+        subject: `✅ Confirmation - Votre demande de  facture pro forma a été reçue`,
         html: quoteAcknowledgmentTemplate(data),
       });
       console.log(`✅ Accusé de réception envoyé à ${data.email}`);
@@ -47,7 +47,7 @@ export class EmailService {
       await transporter.sendMail({
         from: `"${COMPANY_NAME} - Notifications" <${COMPANY_EMAIL}>`,
         to: ADMIN_EMAIL,
-        subject: `🔔 Nouvelle demande de devis - ${data.name}`,
+        subject: `🔔 Nouvelle demande de facture pro forma - ${data.name}`,
         html: adminQuoteNotificationTemplate(data),
       });
       console.log(`✅ Notification admin envoyée pour le devis #${data.id}`);
@@ -98,7 +98,7 @@ export class EmailService {
       ]);
       console.log(`✅ Tous les emails pour le devis #${data.id} ont été envoyés`);
     } catch (error) {
-      console.error('❌ Erreur lors de l\'envoi des emails de devis:', error);
+      console.error('❌ Erreur lors de l\'envoi des emails de Une facture pro forma:', error);
       // On ne throw pas l'erreur pour ne pas bloquer la création du devis
     }
   }

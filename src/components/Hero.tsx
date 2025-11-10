@@ -372,7 +372,7 @@ export default function Hero() {
             whileTap={{ scale: 0.95 }}
             onClick={() => navigate('/quote')}
           >
-            Demander un Devis
+            Demander une facture pro forma
           </motion.button>
 
           <motion.button

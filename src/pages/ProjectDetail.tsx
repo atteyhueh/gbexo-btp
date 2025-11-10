@@ -442,7 +442,7 @@ export default function ProjectDetailPage() {
               </div>
               <h3 className="text-2xl font-bold mb-3">Intéressé par ce projet?</h3>
               <p className="text-white/90 mb-6 text-sm leading-relaxed">
-                Contactez-nous pour obtenir un devis personnalisé basé sur cette expertise.
+                Contactez-nous pour obtenir une facture pro forma personnalisé basé sur cette expertise.
               </p>
               <motion.button
                 onClick={() => {
@@ -455,7 +455,7 @@ export default function ProjectDetailPage() {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
-                Demander un devis
+                Demander une facture pro forma
               </motion.button>
             </motion.div>
 

@@ -18,7 +18,9 @@ import CareersPage from './pages/CareersPage';
 import QuotePage from './pages/QuotePage';
 import Login from './pages/admin/Login';
 import Dashboard from './pages/admin/Dashboard';
+import ChatWidget from './components/ChatWidget';
 
+// À la fin du return, juste avant </AuthProvider>
 function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [darkMode, setDarkMode] = useState(true);
@@ -90,7 +92,9 @@ function App() {
                         <Route path="/quote" element={<QuotePage />} />
                       </Routes>
                     </main>
+
                     <Footer />
+                    <ChatWidget />
                     <UrgentAnnouncementBanner />
                   </div>
                 }
